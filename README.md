@@ -2,14 +2,41 @@
 
 A beautiful, interactive card deck web application celebrating 52 weeks of adventures together in 2026! Each card represents a weekly activity across 4 different categories, with a whimsical theme featuring animals, flowers, and festive touches.
 
-## ✨ Features
+## 📖 Complete Documentation
 
-- 🎴 **52 Activity Cards** - One for each week of 2026
-- 🃏 **Special Joker Cards** - Wild card adventures!
-- 🔄 **Dual Deck System** - Track 2025 memories and 2026 future plans
-- 🎨 **Beautiful Theme** - Animals, flowers, and Christmas decorations
-- ⚡ **Interactive Cards** - Click to flip, double-tap to mark as complete
-- 📱 **Responsive Design** - Beautiful on all devices
+**👉 See [MAIN_DOCUMENTATION.md](MAIN_DOCUMENTATION.md) for complete, up-to-date functionality and features!**
+
+## ✨ Quick Overview
+
+- 🎴 **108 Cards Total** - 54 cards per year (52 regular + 2 jokers)
+- 🔄 **Dual Year System** - 2025 memories and 2026 future plans
+- ✏️ **Full Editing** - All users can edit any card
+- 📸 **Image Uploads** - Add photos to cards
+- 👥 **Two Users** - Alice and Bob (equal permissions)
+- 🎨 **Beautiful UI** - Festive, responsive design
+- ⚡ **Interactive** - Click to flip, double-tap to complete
+
+## 🔐 Login (Local Dev Mode)
+
+| User | Email | Password |
+|------|-------|----------|
+| **Alice** | alice@example.com | alice123 |
+| **Bob** | bob@example.com | bob123 |
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+Access the app at http://localhost:5173
 
 ## 🎭 The 4 Card Suits (Activity Categories)
 
