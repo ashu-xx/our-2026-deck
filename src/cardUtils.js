@@ -3,7 +3,7 @@ import { localStorageDB } from './localStorage'
 export const SUIT_META = {
   hearts: { symbol: '♥️', emoji: '🎭', label: 'Cultural & Social' },
   diamonds: { symbol: '♦️', emoji: '🗺️', label: 'Adventures & Exploration' },
-  clubs: { symbol: '♣️', emoji: '🦋', label: 'Nature & Outdoors' },
+  clubs: { symbol: '♣️', emoji: '🦙', label: 'Nature & Outdoors' },
   spades: { symbol: '♠️', emoji: '🏠', label: 'Cozy & Creative' },
   joker: { symbol: '🃏', emoji: '🌟', label: 'Wild Card' },
   default: { symbol: '✨', emoji: '✨', label: 'Special' }
@@ -41,4 +41,3 @@ export function celebrateIfNeeded(act) {
   document.body.appendChild(celebration)
   setTimeout(() => celebration.remove(), 1500)
 }
-

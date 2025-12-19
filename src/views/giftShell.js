@@ -29,9 +29,9 @@ export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogo
         </div>
       </nav>
 
-      <div class="fixed top-24 left-10 text-6xl animate-float opacity-20">🦋</div>
-      <div class="fixed top-32 right-20 text-5xl animate-float-reverse opacity-20">🌸</div>
-      <div class="fixed bottom-20 left-20 text-5xl animate-float opacity-20">🦊</div>
+      <div class="fixed top-24 left-10 text-6xl animate-float opacity-20">🦙</div>
+      <div class="fixed top-32 right-20 text-5xl animate-float-reverse opacity-20">🌹</div>
+      <div class="fixed bottom-20 left-20 text-5xl animate-float opacity-20">🎅</div>
       <div class="fixed bottom-32 right-32 text-6xl animate-float-reverse opacity-20">🌺</div>
       <div class="fixed top-1/3 left-1/4 text-4xl animate-sparkle opacity-15">✨</div>
       <div class="fixed top-2/3 right-1/4 text-4xl animate-sparkle opacity-15">🎄</div>

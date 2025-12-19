@@ -3,8 +3,8 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
     <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-800 via-green-700 to-green-900 relative overflow-hidden">
         <div class="fixed top-10 left-10 text-6xl animate-float opacity-30">🎄</div>
         <div class="fixed top-20 right-20 text-5xl animate-float-reverse opacity-30">❄️</div>
-        <div class="fixed bottom-20 left-1/4 text-5xl animate-float opacity-30">🌸</div>
-        <div class="fixed bottom-32 right-1/4 text-6xl animate-float-reverse opacity-30">🦋</div>
+        <div class="fixed bottom-20 left-1/4 text-5xl animate-float opacity-30">🌹</div>
+        <div class="fixed bottom-32 right-1/4 text-6xl animate-float-reverse opacity-30">🦙</div>
         <div class="fixed top-1/2 left-10 text-4xl animate-sparkle opacity-20">✨</div>
         <div class="fixed top-1/2 right-10 text-4xl animate-sparkle opacity-20">💫</div>
         <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border-4 border-yellow-400 relative z-10 animate-slide-in">
@@ -13,7 +13,7 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
               <h1 class="font-festive text-5xl mb-2 bg-gradient-to-r from-green-700 to-green-900 bg-clip-text text-transparent">Our 2026 Journey</h1>
               <p class="font-script text-xl text-gray-600 italic mt-2">A year of love and adventure</p>
               <div class="mt-4 flex justify-center gap-3 text-3xl">
-                <span class="animate-float">🦊</span>
+                <span class="animate-float">🎅</span>
                 <span class="animate-float-reverse">🌺</span>
                 <span class="animate-float">🎴</span>
               </div>
