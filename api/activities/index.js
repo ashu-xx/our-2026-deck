@@ -24,7 +24,12 @@ export default async function handler(req, res) {
       for await (const chunk of req) chunks.push(chunk)
       const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf-8')) : {}
 
-      const incoming = Array.isArray(body.activities) ? body.activities : []
+      const incomingRaw = Array.isArray(body.activities) ? body.activities : []
+      const incoming = incomingRaw.filter(a => a && a.id != null && String(a.id).trim() !== '')
+      if (incoming.length !== incomingRaw.length) {
+        return json(res, 400, { error: 'All activities must include a non-empty id.' })
+      }
+
       const existingList = (await kv.get(KEY)) || []
 
       // Build lookup map by ID
@@ -38,7 +43,7 @@ export default async function handler(req, res) {
 
       // Merge/update incoming activities
       const updated = incoming.map((a) => {
-        if (a.id) updatedIds.add(String(a.id))
+        updatedIds.add(String(a.id))
         const prev = existingById[String(a.id)] || {}
         return {
           ...prev,

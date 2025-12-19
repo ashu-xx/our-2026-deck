@@ -178,8 +178,14 @@ export const appBackend = {
 
   async updateActivity(activity, explicitIsLocalDev) {
     const isLocalDev = isLocalDevMode(explicitIsLocalDev)
+
+    const id = activity?.id
+    if (id == null || String(id).trim() === '') {
+      throw new Error('Cannot update activity: missing id')
+    }
+
     if (isLocalDev) {
-      const { error } = await localStorageDB.updateActivity(activity.id, activity)
+      const { error } = await localStorageDB.updateActivity(id, activity)
       if (error) throw new Error(error.message)
       return
     }

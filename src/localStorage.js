@@ -87,9 +87,10 @@ export const localStorageDB = {
     const activities = await this.getActivities()
     const newActivity = {
       ...activity,
-      id: `activity-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      created_at: new Date().toISOString(),
-      is_used: false
+      // Preserve provided IDs (used by year initialization) so future edits can update in-place.
+      id: activity?.id || `activity-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      created_at: activity?.created_at || new Date().toISOString(),
+      is_used: typeof activity?.is_used === 'boolean' ? activity.is_used : false
     }
     activities.push(newActivity)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(activities))
