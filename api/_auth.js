@@ -13,6 +13,31 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(ab, bb)
 }
 
+function normalizeEnvString(v) {
+  // Vercel env vars are usually clean, but copy/paste can introduce trailing spaces/newlines.
+  return String(v ?? '').trim()
+}
+
+function decodeBasicToken(token) {
+  const raw = String(token || '').trim()
+  if (!raw) return ''
+
+  // Support base64url just in case something upstream normalizes the token.
+  const b64 = raw.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4)
+
+  try {
+    return Buffer.from(padded, 'base64').toString('utf8')
+  } catch {
+    return ''
+  }
+}
+
+function unauthorized(res) {
+  res.setHeader('WWW-Authenticate', 'Basic realm="Our 2026 Deck"')
+  json(res, 401, { error: 'Unauthorized' })
+}
+
 /**
  * Protects an API route using credentials stored in Vercel Environment Variables.
  *
@@ -24,8 +49,8 @@ function safeEqual(a, b) {
  * - Authorization: Basic base64(email:password)
  */
 export function requireBasicAuth(req, res) {
-  const expectedEmail = process.env.APP_LOGIN_EMAIL
-  const expectedPassword = process.env.APP_LOGIN_PASSWORD
+  const expectedEmail = normalizeEnvString(process.env.APP_LOGIN_EMAIL)
+  const expectedPassword = normalizeEnvString(process.env.APP_LOGIN_PASSWORD)
 
   // If not configured, fail closed.
   if (!expectedEmail || !expectedPassword) {
@@ -33,24 +58,29 @@ export function requireBasicAuth(req, res) {
     return false
   }
 
-  const header = req.headers.authorization || ''
+  const header = String(req.headers.authorization || '').trim()
   const m = /^Basic\s+(.+)$/i.exec(header)
   if (!m) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Our 2026 Deck"')
-    json(res, 401, { error: 'Unauthorized' })
+    unauthorized(res)
     return false
   }
 
-  const decoded = Buffer.from(m[1], 'base64').toString('utf8')
+  const decoded = decodeBasicToken(m[1])
   const idx = decoded.indexOf(':')
-  const email = idx >= 0 ? decoded.slice(0, idx) : ''
-  const password = idx >= 0 ? decoded.slice(idx + 1) : ''
+  const email = idx >= 0 ? decoded.slice(0, idx).trim() : ''
+  const password = idx >= 0 ? decoded.slice(idx + 1).trim() : ''
 
-  if (!safeEqual(email, expectedEmail) || !safeEqual(password, expectedPassword)) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Our 2026 Deck"')
-    json(res, 401, { error: 'Unauthorized' })
+  // Email is lowercased in the UI; compare case-insensitively.
+  const emailOk = safeEqual(email.toLowerCase(), expectedEmail.toLowerCase())
+  const passwordOk = safeEqual(password, expectedPassword)
+
+  if (!emailOk || !passwordOk) {
+    unauthorized(res)
     return false
   }
 
   return true
 }
+
+// Back-compat: some code may import requireAuth.
+export const requireAuth = requireBasicAuth

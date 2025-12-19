@@ -36,11 +36,19 @@ export default async function handler(req, res) {
   const env = presentEnv(ENV_KEYS)
 
   // Connectivity check for KV.
+  // Important: if KV isn't configured, the '@vercel/kv' client can throw before/when calling.
+  // We *must not* crash the whole function; return a diagnostic response instead.
   let kvOk = false
-  let kvError = null
+  let kvError
   try {
-    await kv.get('our-2026-deck:health')
-    kvOk = true
+    if (!env.KV_REST_API_URL || !env.KV_REST_API_TOKEN) {
+      kvOk = false
+      kvError = 'KV not configured (missing KV_REST_API_URL/KV_REST_API_TOKEN)'
+    } else {
+      await kv.get('our-2026-deck:health')
+      kvOk = true
+      kvError = null
+    }
   } catch (e) {
     kvOk = false
     kvError = e?.message || String(e)
@@ -49,6 +57,6 @@ export default async function handler(req, res) {
   return json(res, 200, {
     ok: kvOk,
     env,
-    kv: { ok: kvOk, error: kvError }
+    kv: { ok: kvOk, error: kvError || null }
   })
 }
