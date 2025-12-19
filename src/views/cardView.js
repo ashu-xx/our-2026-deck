@@ -9,6 +9,9 @@ export function renderCardView({
 }) {
   const { symbol, emoji, label } = suitMeta
 
+  const cacheBuster = act.updated_at || act.id || ''
+  const imgSrc = cacheBuster ? `${imgUrl}?v=${encodeURIComponent(cacheBuster)}` : imgUrl
+
   return `
     <div class="card-inner w-full h-full relative ${isFlipped}"
       style="--flip: ${isFlipped ? '180deg' : '0deg'}; --tx: 0px; --ty: 0px; --rot: 0deg;"
@@ -32,7 +35,7 @@ export function renderCardView({
       <!-- Front (revealed activity) -->
       <div class="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-2xl bg-white border border-slate-200 flex flex-col">
         <div class="relative h-44 overflow-hidden">
-          <img src="${imgUrl}" alt="${act.title}" class="h-full w-full object-cover">
+          <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-cover">
           <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
             ${symbol}
           </div>

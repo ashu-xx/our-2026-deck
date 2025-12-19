@@ -1,4 +1,5 @@
 import { requireBasicAuth, json } from './_auth.js'
+import Busboy from 'busboy'
 
 export const config = {
   api: {
@@ -10,45 +11,36 @@ function blobConfigured() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 }
 
-async function readMultipartFile(req) {
-  // Minimal multipart/form-data parser that supports a single file field named "file".
-  // Avoids extra deps; good enough for small personal apps.
-  const ct = req.headers['content-type'] || ''
-  const m = /boundary=(.+)$/.exec(ct)
-  if (!m) throw new Error('Missing multipart boundary')
-  const boundary = `--${m[1]}`
+async function parseMultipart(req) {
+  return new Promise((resolve, reject) => {
+    try {
+      const busboy = Busboy({ headers: req.headers })
+      let fileBuffer = null
+      let fileName = null
+      let fileMime = null
 
-  const chunks = []
-  for await (const chunk of req) chunks.push(chunk)
-  const buf = Buffer.concat(chunks)
+      busboy.on('file', (_, file, info) => {
+        const { filename, mimeType } = info
+        const chunks = []
+        file.on('data', (d) => chunks.push(d))
+        file.on('end', () => {
+          fileBuffer = Buffer.concat(chunks)
+          fileName = filename
+          fileMime = mimeType
+        })
+      })
 
-  const parts = buf.toString('binary').split(boundary)
-  for (const part of parts) {
-    if (!part || part === '--\r\n' || part === '--') continue
+      busboy.on('error', (err) => reject(err))
+      busboy.on('finish', () => {
+        if (!fileBuffer || !fileName) return reject(new Error('No file found in form-data'))
+        resolve({ filename: fileName, contentType: fileMime || 'application/octet-stream', buffer: fileBuffer })
+      })
 
-    const [rawHeaders, rawBody] = part.split('\r\n\r\n')
-    if (!rawHeaders || !rawBody) continue
-
-    const disp = /content-disposition:([^\r\n]+)/i.exec(rawHeaders)
-    if (!disp) continue
-
-    const nameMatch = /name="([^"]+)"/i.exec(disp[1])
-    const fileMatch = /filename="([^"]*)"/i.exec(disp[1])
-    const fieldName = nameMatch?.[1]
-    const filename = fileMatch?.[1]
-    if (fieldName !== 'file' || !filename) continue
-
-    const typeMatch = /content-type:\s*([^\r\n]+)/i.exec(rawHeaders)
-    const contentType = typeMatch?.[1]?.trim() || 'application/octet-stream'
-
-    // rawBody ends with \r\n, and boundary split keeps trailing markers
-    const bodyBinary = rawBody.replace(/\r\n$/, '')
-    const fileBuffer = Buffer.from(bodyBinary, 'binary')
-
-    return { filename, contentType, buffer: fileBuffer }
-  }
-
-  throw new Error('No file found in form-data')
+      req.pipe(busboy)
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 
 export default async function handler(req, res) {
@@ -64,9 +56,8 @@ export default async function handler(req, res) {
       return json(res, 405, { error: 'Method not allowed' })
     }
 
-    const { filename, contentType, buffer } = await readMultipartFile(req)
+    const { filename, contentType, buffer } = await parseMultipart(req)
 
-    // Lazy-load blob client to avoid crashing the function when Blob env is missing.
     const { put } = await import('@vercel/blob')
 
     const key = `activity-images/${Date.now()}-${filename}`
@@ -75,7 +66,7 @@ export default async function handler(req, res) {
       contentType
     })
 
-    return json(res, 200, { url: blob.url })
+    return json(res, 200, { url: blob.url, key })
   } catch (e) {
     return json(res, 500, { error: e?.message || 'Upload failed' })
   }

@@ -17,6 +17,7 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.18",
     "@vercel/blob": "^1.1.1",
-    "@vercel/kv": "^3.0.0"
+    "@vercel/kv": "^3.0.0",
+    "busboy": "^1.6.0"
   }
 }

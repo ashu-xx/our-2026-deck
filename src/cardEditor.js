@@ -40,7 +40,8 @@ export function showCardEditor(card, isLocalDev, onSave) {
         description: document.getElementById('editDescription').value,
         suit: document.getElementById('editSuit').value,
         image_path: imagePath,
-        planned_date
+        planned_date,
+        updated_at: new Date().toISOString()
       }
 
       if (onSave) {
