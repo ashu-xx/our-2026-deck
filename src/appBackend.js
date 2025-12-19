@@ -16,6 +16,21 @@ function clearBasicAuth() {
   localStorage.removeItem(AUTH_KEY)
 }
 
+function decodeEmailFromBasicAuthHeader(header) {
+  const raw = String(header || '').trim()
+  const m = /^Basic\s+(.+)$/i.exec(raw)
+  if (!m) return null
+
+  try {
+    const decoded = atob(m[1])
+    const idx = decoded.indexOf(':')
+    if (idx <= 0) return null
+    return decoded.slice(0, idx).trim() || null
+  } catch {
+    return null
+  }
+}
+
 function getBasicAuthHeader() {
   return localStorage.getItem(AUTH_KEY) || ''
 }
@@ -137,7 +152,10 @@ export const appBackend = {
       const localUser = JSON.parse(localStorage.getItem('localDevUser'))
       return localUser?.email || 'Guest'
     }
-    return 'Guest'
+
+    // Prod: decode email from the stored Basic auth header.
+    const email = decodeEmailFromBasicAuthHeader(getBasicAuthHeader())
+    return email || 'Guest'
   },
 
   // ---- Activities ----
