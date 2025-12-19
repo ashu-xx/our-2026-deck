@@ -1,22 +1,22 @@
 import { showCardEditor } from './cardEditor'
 import { renderCardView } from './views/cardView'
 
-function buildCtaHtml({ isDone }) {
-  if (isDone) {
-    return `
-      <div class="mt-3 bg-gradient-to-r from-green-400 to-green-500 text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
-        ✓ COMPLETED! 🎉
-      </div>
-    `
-  }
+/**
+ * @typedef {Object} DeckCardContext
+ * @property {boolean} isLocalDev
+ * @property {any} supabase
+ * @property {number} index
+ * @property {string} monthLabel
+ * @property {(id: string, updates: any) => Promise<void>} onEdit
+ * @property {() => Promise<void>} onToggle
+ * @property {(suit: string) => any} getSuitMeta
+ * @property {(activity: any) => Promise<string>} fetchImageUrl
+ */
 
-  return `
-    <div class="mt-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
-      ⚡ DOUBLE TAP TO MARK DONE
-    </div>
-  `
-}
-
+/**
+ * @param {any} act
+ * @param {DeckCardContext} ctx
+ */
 export async function createDeckCard(act, ctx) {
   const {
     isLocalDev,
@@ -71,4 +71,20 @@ export async function createDeckCard(act, ctx) {
   }
 
   return card
+}
+
+function buildCtaHtml({ isDone }) {
+  if (isDone) {
+    return `
+      <div class="mt-3 bg-linear-to-r from-green-400 to-green-500 text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
+        ✓ COMPLETED! 🎉
+      </div>
+    `
+  }
+
+  return `
+    <div class="mt-3 bg-linear-to-r from-yellow-400 to-yellow-500 text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
+      ⚡ DOUBLE TAP TO MARK DONE
+    </div>
+  `
 }

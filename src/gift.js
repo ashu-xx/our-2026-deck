@@ -3,18 +3,33 @@ import { celebrateIfNeeded, fetchImageUrl, SUIT_META, toggleUsage } from './card
 import { createDeckCard } from './renderCard'
 import { renderGiftShell } from './views/giftShell'
 import { renderMonthView } from './views/monthView'
+import { renderLandingView } from './views/landingView'
 import { checkAndInitializeYear, getYearConfig } from './cardInitializer'
 
-export async function renderGiftView(app, supabase) {
-  const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
-  if (!isLocalDev && !supabase) {
-    app.innerHTML = '<div class="p-8 text-center text-white">Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.</div>'
-    return
-  }
+function parseLocalDate(isoDate) {
+  if (!isoDate) return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
+  if (!m) return null
+  const year = Number(m[1])
+  const month = Number(m[2]) - 1
+  const day = Number(m[3])
+  const d = new Date(year, month, day)
+  return Number.isNaN(d.getTime()) ? null : d
+}
 
-  const yearConfig = getYearConfig()
-  const { pastYear, upcomingYear } = yearConfig
+function dateKeyOrDefault(act) {
+  const d = parseLocalDate(act.planned_date)
+  if (d) return d.getTime()
+  return new Date(act.deck_year, 11, 1).getTime()
+}
 
+function monthIndexOrDefault(act) {
+  const d = parseLocalDate(act.planned_date)
+  if (d) return d.getMonth()
+  return 11
+}
+
+async function runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear }) {
   await checkAndInitializeYear(pastYear, supabase, isLocalDev)
   await checkAndInitializeYear(upcomingYear, supabase, isLocalDev)
 
@@ -29,30 +44,6 @@ export async function renderGiftView(app, supabase) {
 
   let activities = []
 
-  // Helpers: prefer planned_date only
-  function parseLocalDate(isoDate) {
-    if (!isoDate) return null
-    const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(isoDate)
-    if (!m) return null
-    const year = Number(m[1])
-    const month = Number(m[2]) - 1
-    const day = Number(m[3])
-    const d = new Date(year, month, day)
-    return Number.isNaN(d.getTime()) ? null : d
-  }
-
-  function dateKeyOrDefault(act) {
-    const d = parseLocalDate(act.planned_date)
-    if (d) return d.getTime()
-    return new Date(act.deck_year, 11, 1).getTime()
-  }
-
-  function monthIndexOrDefault(act) {
-    const d = parseLocalDate(act.planned_date)
-    if (d) return d.getMonth()
-    return 11
-  }
-
   async function refreshActivities() {
     if (isLocalDev) {
       activities = await localStorageDB.getActivities()
@@ -61,19 +52,16 @@ export async function renderGiftView(app, supabase) {
       activities = data || []
     }
 
-    // Ensure every activity has a planned_date (defensive, should already be backfilled)
     activities = activities.map(a => ({
       ...a,
       planned_date: a.planned_date || `${a.deck_year}-12-01`
     }))
 
-    // Past-year cards are treated as completed/revealed
     activities = activities.map(a => (a.deck_year === pastYear ? { ...a, is_used: true } : a))
 
     activities.sort((a, b) => dateKeyOrDefault(a) - dateKeyOrDefault(b))
   }
 
-  // IMPORTANT: actually fetch activities before first render
   await refreshActivities()
 
   const { deckEl, setYearActive } = renderGiftShell({
@@ -98,15 +86,6 @@ export async function renderGiftView(app, supabase) {
 
   let currentYear = upcomingYear
 
-  function monthNameFromIso(iso) {
-    const d = parseLocalDate(iso) || new Date(currentYear, 11, 1)
-    return d.toLocaleString(undefined, { month: 'long' }).toUpperCase()
-  }
-
-  function getMonthIndex(act) {
-    return monthIndexOrDefault(act)
-  }
-
   async function renderMonthWise() {
     await refreshActivities()
 
@@ -114,7 +93,7 @@ export async function renderGiftView(app, supabase) {
 
     const monthBuckets = new Map()
     for (const act of filtered) {
-      const monthIndex = getMonthIndex(act)
+      const monthIndex = monthIndexOrDefault(act)
       if (!monthBuckets.has(monthIndex)) monthBuckets.set(monthIndex, [])
       monthBuckets.get(monthIndex).push(act)
     }
@@ -129,32 +108,37 @@ export async function renderGiftView(app, supabase) {
       const section = sectionWrapper.firstElementChild
       const grid = section.querySelector('[data-month-grid]')
 
-      const acts = monthBuckets.get(monthIndex)
       const label = new Date(currentYear, monthIndex, 1)
         .toLocaleString(undefined, { month: 'long' })
         .toUpperCase()
 
-      const nodes = await Promise.all(acts.map((act, index) => createDeckCard(act, {
-        isLocalDev,
-        supabase,
-        index,
-        monthLabel: label,
-        onEdit: async (id, updates) => {
-          if (isLocalDev) {
-            await localStorageDB.updateActivity(id, updates)
-          } else {
-            await supabase.from('activities').update(updates).eq('id', id)
-          }
-          await renderMonthWise()
-        },
-        onToggle: async () => {
-          await toggleUsage(act, isLocalDev, supabase)
-          celebrateIfNeeded(act)
-          await renderMonthWise()
-        },
-        getSuitMeta: (suit) => SUIT_META[suit] || SUIT_META.default,
-        fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev, supabase)
-      })))
+      const acts = monthBuckets.get(monthIndex)
+
+      const nodes = await Promise.all(acts.map((act, index) => {
+        const cardCtx = {
+          isLocalDev,
+          supabase,
+          index,
+          monthLabel: label,
+          onEdit: async (id, updates) => {
+            if (isLocalDev) {
+              await localStorageDB.updateActivity(id, updates)
+            } else {
+              await supabase.from('activities').update(updates).eq('id', id)
+            }
+            await renderMonthWise()
+          },
+          onToggle: async () => {
+            await toggleUsage(act, isLocalDev, supabase)
+            celebrateIfNeeded(act)
+            await renderMonthWise()
+          },
+          getSuitMeta: (suit) => SUIT_META[suit] || SUIT_META.default,
+          fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev, supabase)
+        }
+
+        return createDeckCard(act, cardCtx)
+      }))
 
       nodes.forEach(n => grid.appendChild(n))
       deckEl.appendChild(section)
@@ -163,4 +147,24 @@ export async function renderGiftView(app, supabase) {
 
   setYearActive(currentYear)
   await renderMonthWise()
+}
+
+export async function renderGiftView(app, supabase) {
+  const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
+  if (!isLocalDev && !supabase) {
+    app.innerHTML = '<div class="p-8 text-center text-white">Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.</div>'
+    return
+  }
+
+  const yearConfig = getYearConfig()
+  const { pastYear, upcomingYear } = yearConfig
+
+  // Landing screen first (no data fetch required)
+  app.innerHTML = renderLandingView({ pastYear, upcomingYear })
+
+  // Proceed to load actual deck view when user clicks "Deal"
+  const dealBtn = app.querySelector('#dealDeckBtn')
+  if (!dealBtn) return
+
+  dealBtn.onclick = () => runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear })
 }

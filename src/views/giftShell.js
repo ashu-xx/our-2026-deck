@@ -13,7 +13,7 @@ export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogo
             </div>
             <div class="flex items-center space-x-4">
               <div class="hidden sm:flex items-center space-x-3 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-gold rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                <div class="w-8 h-8 bg-linear-to-br from-yellow-400 to-gold rounded-full flex items-center justify-center text-white font-bold shadow-lg">
                   ${userEmail.charAt(0).toUpperCase()}
                 </div>
                 <div class="flex flex-col">

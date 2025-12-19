@@ -7,7 +7,7 @@
   }
 
   .surface-glass-nav {
-    @apply bg-gradient-to-r from-xmas-green/95 to-green-900/95 backdrop-blur-md border-b-4 border-gold shadow-2xl;
+    @apply bg-linear-to-r from-xmas-green/95 to-green-900/95 backdrop-blur-md border-b-4 border-gold shadow-2xl;
   }
 
   .btn {
@@ -21,12 +21,12 @@
 
   .btn-primary {
     @apply inline-flex items-center justify-center font-semibold transition-all;
-    @apply bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700;
+    @apply bg-linear-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700;
   }
 
   .btn-success {
     @apply inline-flex items-center justify-center font-semibold transition-all;
-    @apply bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800;
+    @apply bg-linear-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800;
   }
 
   .btn-info {
@@ -44,7 +44,7 @@
   }
 
   .tab-pill-active {
-    @apply bg-gradient-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg;
+    @apply bg-linear-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg;
   }
 
   .input-field {
@@ -186,9 +186,9 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 0% 50%; }
+  0% { background-position: 0 50%; }
   50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  100% { background-position: 0 50%; }
 }
 
 /* Custom scrollbar */
@@ -297,4 +297,3 @@ nav button:hover {
 .animate-checkmark {
   animation: checkmark 0.4s ease-out;
 }
-
