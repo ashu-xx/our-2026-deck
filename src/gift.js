@@ -1,5 +1,17 @@
+import { localStorageDB } from './localStorage'
+
 export async function renderGiftView(app, supabase) {
-  const { data: activities } = await supabase.from('activities').select('*').order('week_number', { ascending: true })
+  const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
+
+  // Use local storage in dev mode, Supabase in production
+  let activities = []
+  if (isLocalDev) {
+    activities = await localStorageDB.getActivities()
+    activities.sort((a, b) => a.week_number - b.week_number)
+  } else {
+    const { data } = await supabase.from('activities').select('*').order('week_number', { ascending: true })
+    activities = data || []
+  }
 
   app.innerHTML = `
     <div class="min-h-screen bg-pattern pb-20 relative overflow-hidden">
@@ -38,9 +50,17 @@ export async function renderGiftView(app, supabase) {
 
     for (const [index, act] of filtered.entries()) {
       let imgUrl = 'https://via.placeholder.com/300x200?text=No+Photo'
+
       if (act.image_path) {
-        const { data } = await supabase.storage.from('activity-images').createSignedUrl(act.image_path, 3600)
-        imgUrl = data.signedUrl
+        if (isLocalDev) {
+          // Load from local storage
+          const localImg = localStorageDB.getImageUrl(act.image_path)
+          if (localImg) imgUrl = localImg
+        } else {
+          // Load from Supabase
+          const { data } = await supabase.storage.from('activity-images').createSignedUrl(act.image_path, 3600)
+          if (data) imgUrl = data.signedUrl
+        }
       }
 
       const card = document.createElement('div')
@@ -101,17 +121,35 @@ export async function renderGiftView(app, supabase) {
       if (year === 2026) {
         card.ondblclick = async (e) => {
           e.stopPropagation()
-          const { error } = await supabase.from('activities').update({ is_used: !act.is_used }).eq('id', act.id)
-          if (!error) {
-            // Show a nice celebration animation
-            if (!act.is_used) {
-              const celebration = document.createElement('div')
-              celebration.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none'
-              celebration.innerHTML = '<div class="text-9xl animate-bounce">🎉</div>'
-              document.body.appendChild(celebration)
-              setTimeout(() => celebration.remove(), 1500)
+
+          if (isLocalDev) {
+            // Update in local storage
+            const { error } = await localStorageDB.updateActivity(act.id, { is_used: !act.is_used })
+            if (!error) {
+              // Show celebration animation
+              if (!act.is_used) {
+                const celebration = document.createElement('div')
+                celebration.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none'
+                celebration.innerHTML = '<div class="text-9xl animate-bounce">🎉</div>'
+                document.body.appendChild(celebration)
+                setTimeout(() => celebration.remove(), 1500)
+              }
+              location.reload()
             }
-            location.reload()
+          } else {
+            // Update in Supabase
+            const { error } = await supabase.from('activities').update({ is_used: !act.is_used }).eq('id', act.id)
+            if (!error) {
+              // Show celebration animation
+              if (!act.is_used) {
+                const celebration = document.createElement('div')
+                celebration.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none'
+                celebration.innerHTML = '<div class="text-9xl animate-bounce">🎉</div>'
+                document.body.appendChild(celebration)
+                setTimeout(() => celebration.remove(), 1500)
+              }
+              location.reload()
+            }
           }
         }
       }

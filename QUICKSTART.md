@@ -51,7 +51,20 @@ The app will open at `http://localhost:5173`
    - **Image**: Upload a photo (optional)
 3. Click "Save to Database"
 
-**Note**: In local dev mode, images won't actually save to Supabase, but you can still test the UI!
+**Note**: In local dev mode, all data (including images!) is saved to your browser's local storage, so it will persist across sessions. You can add as many cards as you want and they'll be there when you come back!
+
+### 5a. Managing Local Data (Local Dev Mode Only)
+
+When in local dev mode, you'll see data management tools in the admin panel:
+
+- **📤 Export Data**: Download a JSON backup file of all your activities and images
+- **📥 Import Data**: Restore from a previously exported backup file
+- **🗑️ Clear All**: Delete all local data and start fresh
+
+This is useful for:
+- Backing up your work before deploying to production
+- Transferring data between browsers
+- Starting over if you want to redo your activities
 
 ### 6. View as Your Girlfriend
 
@@ -60,6 +73,14 @@ The app will open at `http://localhost:5173`
 3. See your beautiful card deck!
 4. Click cards to flip them
 5. Switch between 2025 Memories and 2026 Adventures
+6. Double-tap any 2026 card to mark it as complete (you'll see a celebration! 🎉)
+
+**Local Storage Benefits**:
+- All your cards persist in the browser
+- Images are stored as base64 (no external server needed)
+- Works completely offline
+- Sample data is pre-loaded so you can see how it looks
+- Perfect for testing and designing your deck before going live
 
 ---
 
@@ -183,12 +204,22 @@ npx netlify deploy --prod --dir=dist
 - Or set up real Supabase authentication
 
 ### "Images not showing"
-- In local dev mode, images won't actually upload
-- Set up Supabase storage for real image uploads
+- In local dev mode, images ARE saved to local storage as base64
+- If images don't appear, check browser console for errors
+- Try a smaller image file (under 1-2MB works best)
+- Set up Supabase storage for production use
 
 ### "No cards showing"
-- You need to add activities first using the admin account
+- In local dev mode, there should be 3 sample cards pre-loaded
+- Add more activities using the admin account
 - Make sure you're logged in with the user account to view
+- Try clicking "Clear All" in admin panel and refresh to reset sample data
+
+### "Data disappeared"
+- Local storage is browser-specific - data won't sync between devices
+- Clearing browser cache will delete local data
+- Export your data regularly as backup!
+- For permanent storage, set up Supabase
 
 ### "Build errors"
 - Run `npm install` to make sure all dependencies are installed

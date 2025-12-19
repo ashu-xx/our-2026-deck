@@ -1,7 +1,17 @@
+import { localStorageDB } from './localStorage'
+
 export async function renderAdminDashboard(app, supabase) {
+  const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
+
   app.innerHTML = `
     <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
       <div class="max-w-2xl mx-auto">
+        ${isLocalDev ? `
+        <div class="bg-blue-100 border-2 border-blue-400 text-blue-800 px-4 py-3 rounded-lg mb-4 text-sm">
+          <strong>🔧 Local Dev Mode Active</strong><br/>
+          Activities are saved to browser local storage. Data will persist across sessions but is local to this browser.
+        </div>
+        ` : ''}
         <div class="bg-white p-8 rounded-2xl shadow-2xl border-4 border-yellow-400 mb-6">
           <div class="flex justify-between items-center mb-6">
             <div>
@@ -85,6 +95,26 @@ export async function renderAdminDashboard(app, supabase) {
             <div class="text-xs text-gray-600">Special surprises, spontaneous adventures, unique experiences that don't fit other categories</div>
           </div>
         </div>
+
+        ${isLocalDev ? `
+        <!-- Local Storage Management -->
+        <div class="bg-white p-6 rounded-2xl shadow-xl border-2 border-gray-200 mt-4">
+          <h3 class="font-bold text-lg mb-4 text-gray-800 font-festive">💾 Local Data Management</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <button id="exportData" class="bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-blue-600 transition">
+              📤 Export Data
+            </button>
+            <button id="importData" class="bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-green-600 transition">
+              📥 Import Data
+            </button>
+            <button id="clearData" class="bg-red-500 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-red-600 transition">
+              🗑️ Clear All
+            </button>
+          </div>
+          <input type="file" id="importFile" accept=".json" class="hidden">
+          <p class="text-xs text-gray-500 mt-3">Export your data to back it up, or clear all to start fresh. Import previously exported data to restore.</p>
+        </div>
+        ` : ''}
       </div>
     </div>`
 
@@ -98,6 +128,50 @@ export async function renderAdminDashboard(app, supabase) {
     }
   }
 
+  // Local storage management buttons
+  if (isLocalDev) {
+    document.querySelector('#exportData')?.addEventListener('click', () => {
+      const data = localStorageDB.exportData()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `our-2026-deck-backup-${new Date().toISOString().split('T')[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    })
+
+    document.querySelector('#importData')?.addEventListener('click', () => {
+      document.querySelector('#importFile').click()
+    })
+
+    document.querySelector('#importFile')?.addEventListener('change', (e) => {
+      const file = e.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result)
+            localStorageDB.importData(data)
+            alert('Data imported successfully! Refreshing...')
+            location.reload()
+          } catch (err) {
+            alert('Error importing data: ' + err.message)
+          }
+        }
+        reader.readAsText(file)
+      }
+    })
+
+    document.querySelector('#clearData')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
+        localStorageDB.clearAll()
+        alert('All data cleared! Refreshing...')
+        location.reload()
+      }
+    })
+  }
+
   document.querySelector('#activityForm').onsubmit = async (e) => {
     e.preventDefault()
     const btn = document.querySelector('#saveBtn')
@@ -108,27 +182,51 @@ export async function renderAdminDashboard(app, supabase) {
     let path = null
 
     if (file) {
-      const fileName = `${Date.now()}-${file.name}`
-      const { data, error: upErr } = await supabase.storage
-      .from('activity-images')
-      .upload(`uploads/${fileName}`, file)
-      if (upErr) {
-        alert(upErr.message)
-        btn.disabled = false
-        btn.innerHTML = "Save to Database ✨"
-        return
+      if (isLocalDev) {
+        // Save to local storage
+        const { data, error: upErr } = await localStorageDB.uploadImage(file)
+        if (upErr) {
+          alert(upErr.message)
+          btn.disabled = false
+          btn.innerHTML = "Save to Database ✨"
+          return
+        }
+        path = data.path
+      } else {
+        // Save to Supabase
+        const fileName = `${Date.now()}-${file.name}`
+        const { data, error: upErr } = await supabase.storage
+        .from('activity-images')
+        .upload(`uploads/${fileName}`, file)
+        if (upErr) {
+          alert(upErr.message)
+          btn.disabled = false
+          btn.innerHTML = "Save to Database ✨"
+          return
+        }
+        path = data.path
       }
-      path = data.path
     }
 
-    const { error } = await supabase.from('activities').insert([{
+    const activityData = {
       title: e.target.title.value,
       description: e.target.description.value,
       suit: e.target.suit.value,
       deck_year: parseInt(e.target.deckYear.value),
       week_number: parseInt(e.target.weekNumber.value),
       image_path: path
-    }])
+    }
+
+    let error = null
+    if (isLocalDev) {
+      // Save to local storage
+      const result = await localStorageDB.insertActivity(activityData)
+      error = result.error
+    } else {
+      // Save to Supabase
+      const result = await supabase.from('activities').insert([activityData])
+      error = result.error
+    }
 
     if (error) {
       alert(error.message)
