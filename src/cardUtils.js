@@ -9,8 +9,12 @@ export const SUIT_META = {
   default: { symbol: '✨', emoji: '✨', label: 'Special' }
 }
 
+export function getSuitMeta(suit) {
+  return SUIT_META[suit] || SUIT_META.default
+}
+
 export async function fetchImageUrl(act, isLocalDev) {
-  const fallback = 'https://via.placeholder.com/300x200?text=No+Photo'
+  const fallback = '/vite.svg'
   if (!act.image_path) return fallback
 
   const url = dataStore.getImageUrl(act.image_path, isLocalDev)

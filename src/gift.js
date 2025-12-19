@@ -1,4 +1,4 @@
-import { celebrateIfNeeded, fetchImageUrl, toggleUsage } from './cardUtils'
+import { celebrateIfNeeded, fetchImageUrl, getSuitMeta, toggleUsage } from './cardUtils'
 import { createDeckCard } from './renderCard'
 import { renderGiftShell } from './views/giftShell'
 import { renderMonthView } from './views/monthView'
@@ -76,6 +76,16 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
 
     const filtered = activities.filter(a => a.deck_year === currentYear)
 
+    if (filtered.length === 0) {
+      deckEl.innerHTML = `
+        <div class="max-w-3xl mx-auto mt-10 surface-card p-6 text-center border-2 border-white/20">
+          <h3 class="font-bold text-xl text-white">No cards found for ${currentYear}</h3>
+          <p class="text-white/70 mt-2 text-sm">Your deck is empty for this year.</p>
+        </div>
+      `
+      return
+    }
+
     const monthBuckets = new Map()
     for (const act of filtered) {
       const monthIndex = monthIndexOrDefault(act)
@@ -113,7 +123,7 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
             celebrateIfNeeded(act)
             await renderMonthWise()
           },
-          getSuitMeta: (suit) => SUIT_META[suit] || SUIT_META.default,
+          getSuitMeta,
           fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
         }
 

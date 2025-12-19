@@ -6,44 +6,74 @@ const IMAGES_KEY = 'our-2026-deck-images'
 function initializeSampleData() {
   const existing = localStorage.getItem(STORAGE_KEY)
   if (!existing) {
+    const nowYear = new Date().getFullYear()
+
     const sampleActivities = [
+      // Upcoming year sample
       {
-        id: 'sample-1',
+        id: 'sample-upcoming-1',
         title: 'Richmond Park Deer Walk',
         description: 'New Year\'s walk with deer spotting and hot chocolate',
         suit: 'clubs',
-        deck_year: 2026,
+        deck_year: nowYear + 1,
         week_number: 1,
-        planned_date: '2026-01-03',
+        planned_date: `${nowYear + 1}-01-03`,
         image_path: null,
         is_used: false,
         created_at: new Date().toISOString()
       },
       {
-        id: 'sample-2',
+        id: 'sample-upcoming-2',
         title: 'Cozy Movie Marathon',
         description: 'Our favorite films, popcorn, and blankets',
         suit: 'spades',
-        deck_year: 2026,
+        deck_year: nowYear + 1,
         week_number: 2,
-        planned_date: '2026-01-10',
+        planned_date: `${nowYear + 1}-01-10`,
         image_path: null,
         is_used: false,
         created_at: new Date().toISOString()
       },
       {
-        id: 'sample-3',
+        id: 'sample-upcoming-3',
         title: 'Tate Modern Late Night',
         description: 'Art, cocktails, and culture on a Friday evening',
         suit: 'hearts',
-        deck_year: 2026,
+        deck_year: nowYear + 1,
         week_number: 3,
-        planned_date: '2026-01-17',
+        planned_date: `${nowYear + 1}-01-17`,
         image_path: null,
         is_used: false,
         created_at: new Date().toISOString()
+      },
+
+      // Past year sample (shown as "memories")
+      {
+        id: 'sample-past-1',
+        title: 'Our First Memory Card',
+        description: `A little placeholder memory to prove the ${nowYear} tab works in local dev.`,
+        suit: 'diamonds',
+        deck_year: nowYear,
+        week_number: 1,
+        planned_date: `${nowYear}-01-06`,
+        image_path: null,
+        is_used: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 'sample-past-2',
+        title: 'A Cozy Night In',
+        description: 'Blankets, tea, and planning our next adventure.',
+        suit: 'spades',
+        deck_year: nowYear,
+        week_number: 2,
+        planned_date: `${nowYear}-01-13`,
+        image_path: null,
+        is_used: true,
+        created_at: new Date().toISOString()
       }
     ]
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleActivities))
   }
 }

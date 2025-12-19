@@ -36,7 +36,7 @@ function renderLogin() {
         init()
       } catch {
         if (isLocalDev) {
-          alert('❌ Invalid credentials!\n\n👤 Alice: alice@example.com / alice123\n👤 Bob: bob@example.com / bob123')
+          alert('❌ Invalid credentials!\n\nSet local users in .env via VITE_LOCAL_USERS (email:password,...)')
         } else {
           alert('❌ Invalid credentials for this deployment.')
         }

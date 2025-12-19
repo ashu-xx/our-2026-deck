@@ -88,10 +88,15 @@ async function backfillPlannedDates({ year, cards, isLocalDev }) {
 
 // Check if year needs initialization
 export async function checkAndInitializeYear(year, isLocalDev) {
-  const allActivities = await dataStore.listActivities(isLocalDev)
-  const existingCards = allActivities.filter(a => a.deck_year === year)
+  let allActivities = await dataStore.listActivities(isLocalDev)
+  let existingCards = allActivities.filter(a => a.deck_year === year)
 
   await ensureYearCards({ year, existingCards, isLocalDev })
+
+  // Re-fetch after potential inserts so the caller sees the newly created cards.
+  allActivities = await dataStore.listActivities(isLocalDev)
+  existingCards = allActivities.filter(a => a.deck_year === year)
+
   await backfillPlannedDates({ year, cards: existingCards, isLocalDev })
 }
 
