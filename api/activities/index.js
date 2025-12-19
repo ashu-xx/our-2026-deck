@@ -32,6 +32,7 @@ export default async function handler(req, res) {
       const merged = incoming.map((a) => {
         const prev = existing[String(a.id)] || {}
         return {
+          ...prev,
           ...a,
           updated_at: a.updated_at || prev.updated_at || new Date().toISOString()
         }
