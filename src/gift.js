@@ -1,7 +1,17 @@
 import { localStorageDB } from './localStorage'
+import { showCardEditor } from './cardEditor'
+import { checkAndInitializeYear, getYearConfig } from './cardInitializer'
 
-export async function renderGiftView(app, supabase) {
+export async function renderGiftView(app, supabase, isAdmin = false) {
   const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
+
+  // Get year configuration
+  const yearConfig = getYearConfig()
+  const { pastYear, upcomingYear } = yearConfig
+
+  // Initialize cards for both years
+  await checkAndInitializeYear(pastYear, supabase, isLocalDev)
+  await checkAndInitializeYear(upcomingYear, supabase, isLocalDev)
 
   // Get user email
   let userEmail = ''
@@ -44,7 +54,9 @@ export async function renderGiftView(app, supabase) {
                 <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-gold rounded-full flex items-center justify-center text-white font-bold shadow-lg">
                   ${userEmail.charAt(0).toUpperCase()}
                 </div>
-                <span class="text-white text-sm font-medium">${userEmail.split('@')[0]}</span>
+                <div class="flex flex-col">
+                  <span class="text-white text-sm font-medium">${userEmail.split('@')[0]}</span>
+                </div>
               </div>
               <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2">
                 <span>🚪</span>
@@ -69,11 +81,11 @@ export async function renderGiftView(app, supabase) {
         <p class="font-script text-2xl text-white/90 mb-6">52 Weeks, Infinite Memories ✨</p>
         
         <div class="flex justify-center bg-white/20 p-1.5 rounded-full w-fit mx-auto backdrop-blur-md shadow-2xl border-2 border-white/30">
-          <button id="btn25" class="px-8 py-3 rounded-full transition-all font-semibold text-xmas-green hover:text-green-900">
-            <span class="mr-2">📸</span> 2025 Memories
+          <button id="btnPast" class="px-8 py-3 rounded-full transition-all font-semibold text-xmas-green hover:text-green-900">
+            <span class="mr-2">📸</span> ${pastYear} Memories
           </button>
-          <button id="btn26" class="px-8 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg">
-            <span class="mr-2">🎴</span> 2026 Adventures
+          <button id="btnUpcoming" class="px-8 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg">
+            <span class="mr-2">🎴</span> ${upcomingYear} Adventures
           </button>
         </div>
       </header>
@@ -118,7 +130,7 @@ export async function renderGiftView(app, supabase) {
       card.className = `perspective h-80 cursor-pointer animate-slide-in card-container ${act.is_used ? 'opacity-60' : ''}`
       card.style.animationDelay = `${index * 0.05}s`
 
-      const isFlipped = year === 2025 ? 'rotate-y-180' : ''
+      const isFlipped = year === pastYear ? 'rotate-y-180' : ''
       const suitClass = `suit-${act.suit}`
       const suitEmoji = getSuitEmoji(act.suit)
       const suitSymbol = getSymbol(act.suit)
@@ -133,6 +145,9 @@ export async function renderGiftView(app, supabase) {
               <span class="text-gray-700 font-bold text-xs tracking-widest">WEEK ${act.week_number}</span>
             </div>
             <div class="mt-3 text-xs text-gray-600 font-semibold">${getCategoryName(act.suit)}</div>
+            <button class="edit-card-btn mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-full transition-all shadow-md">
+              ✏️ Edit
+            </button>
           </div>
           
           <!-- Card Front (Activity details) -->
@@ -145,13 +160,16 @@ export async function renderGiftView(app, supabase) {
               <div class="absolute top-2 left-2 bg-white/90 px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-lg">
                 Week ${act.week_number}
               </div>
+              <button class="edit-card-btn absolute bottom-2 right-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-xs font-bold rounded-full transition-all shadow-md">
+                ✏️ Edit
+              </button>
             </div>
             
             <div class="p-4 flex-1 flex flex-col ${suitClass}">
               <h3 class="font-bold text-base leading-tight text-gray-800 mb-2">${act.title}</h3>
               <p class="text-xs text-gray-700 leading-relaxed flex-1">${act.description || ''}</p>
               
-              ${year === 2026 ? `
+              ${year === upcomingYear ? `
                 <div class="mt-3 bg-gradient-to-r ${act.is_used ? 'from-green-400 to-green-500' : 'from-yellow-400 to-yellow-500'} text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
                   ${act.is_used ? '✓ COMPLETED! 🎉' : '⚡ DOUBLE TAP TO MARK DONE'}
                 </div>
@@ -164,12 +182,25 @@ export async function renderGiftView(app, supabase) {
           </div>
         </div>`
 
-      card.onclick = () => {
+      card.onclick = (e) => {
+        // Don't flip if clicking edit button
+        if (e.target.closest('.edit-card-btn')) {
+          e.stopPropagation()
+          showCardEditor(act, supabase, isLocalDev, async (id, updates) => {
+            if (isLocalDev) {
+              await localStorageDB.updateActivity(id, updates)
+            } else {
+              await supabase.from('activities').update(updates).eq('id', id)
+            }
+          })
+          return
+        }
+
         const inner = card.querySelector('.card-inner')
         inner.classList.toggle('rotate-y-180')
       }
 
-      if (year === 2026) {
+      if (year === upcomingYear) {
         card.ondblclick = async (e) => {
           e.stopPropagation()
 
@@ -253,14 +284,14 @@ export async function renderGiftView(app, supabase) {
     }[s] || 'Special'
   }
 
-  document.querySelector('#btn25').onclick = () => {
-    switchTab(document.querySelector('#btn25'))
-    loadYear(2025)
+  document.querySelector('#btnPast').onclick = () => {
+    switchTab(document.querySelector('#btnPast'))
+    loadYear(pastYear)
   }
 
-  document.querySelector('#btn26').onclick = () => {
-    switchTab(document.querySelector('#btn26'))
-    loadYear(2026)
+  document.querySelector('#btnUpcoming').onclick = () => {
+    switchTab(document.querySelector('#btnUpcoming'))
+    loadYear(upcomingYear)
   }
 
   function switchTab(btn) {
@@ -273,7 +304,7 @@ export async function renderGiftView(app, supabase) {
     btn.classList.add('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500', 'text-xmas-green', 'font-bold', 'shadow-lg')
   }
 
-  // Start with 2026 view
-  switchTab(document.querySelector('#btn26'))
-  loadYear(2026)
+  // Start with upcoming year view
+  switchTab(document.querySelector('#btnUpcoming'))
+  loadYear(upcomingYear)
 }

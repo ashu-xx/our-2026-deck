@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import './style.css'
-import { renderAdminDashboard } from './admin'
 import { renderGiftView } from './gift'
 
 export const supabase = createClient(
@@ -10,10 +9,10 @@ export const supabase = createClient(
 
 const app = document.querySelector('#app')
 
-// Local dev mode mock users
+// Local dev mode mock users - No admin, everyone is equal
 const LOCAL_USERS = {
-  'admin@example.com': { password: 'password123', email: 'admin@example.com', id: '1' },
-  'user@example.com': { password: 'password123', email: 'user@example.com', id: '2' }
+  'alice@example.com': { password: 'alice123', email: 'alice@example.com', id: '1', role: 'user' },
+  'bob@example.com': { password: 'bob123', email: 'bob@example.com', id: '2', role: 'user' }
 }
 
 async function init() {
@@ -25,8 +24,6 @@ async function init() {
       const localUser = JSON.parse(localStorage.getItem('localDevUser'))
       if (!localUser) {
         renderLogin()
-      } else if (localUser.email === import.meta.env.VITE_ADMIN_EMAIL) {
-        renderAdminDashboard(app, supabase)
       } else {
         renderGiftView(app, supabase)
       }
@@ -43,8 +40,6 @@ async function init() {
 
   if (!user) {
     renderLogin()
-  } else if (user.email === import.meta.env.VITE_ADMIN_EMAIL) {
-    renderAdminDashboard(app, supabase)
   } else {
     renderGiftView(app, supabase)
   }
@@ -85,11 +80,17 @@ function renderLogin() {
             <div class="bg-yellow-50 border-2 border-yellow-400 text-yellow-800 px-4 py-3 rounded-xl mb-6 text-xs">
               <div class="flex items-start space-x-2">
                 <span class="text-lg">🔧</span>
-                <div>
-                  <strong class="block mb-1">Local Dev Mode</strong>
+                <div class="w-full">
+                  <strong class="block mb-2">Local Dev Mode - Test Accounts</strong>
                   <div class="space-y-1">
-                    <div><span class="font-semibold">Admin:</span> admin@example.com / password123</div>
-                    <div><span class="font-semibold">User:</span> user@example.com / password123</div>
+                    <div class="flex justify-between items-center bg-blue-100 px-2 py-1 rounded">
+                      <span class="font-semibold">👤 Alice:</span> 
+                      <span class="font-mono text-xs">alice@example.com / alice123</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-green-100 px-2 py-1 rounded">
+                      <span class="font-semibold">👤 Bob:</span> 
+                      <span class="font-mono text-xs">bob@example.com / bob123</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -160,7 +161,7 @@ function renderLogin() {
         localStorage.setItem('localDevUser', JSON.stringify({ email: user.email, id: user.id }))
         init()
       } else {
-        alert('Invalid credentials. Use admin@example.com or user@example.com with password: password123')
+        alert('❌ Invalid credentials!\n\n👤 Alice: alice@example.com / alice123\n👤 Bob: bob@example.com / bob123')
       }
     } else {
       // Real Supabase authentication
