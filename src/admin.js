@@ -42,7 +42,15 @@ export async function renderAdminDashboard(app, supabase) {
       </div>
     </div>`
 
-  document.querySelector('#logout').onclick = () => supabase.auth.signOut().then(() => location.reload())
+  document.querySelector('#logout').onclick = () => {
+    const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
+    if (isLocalDev) {
+      localStorage.removeItem('localDevUser')
+      location.reload()
+    } else {
+      supabase.auth.signOut().then(() => location.reload())
+    }
+  }
 
   document.querySelector('#activityForm').onsubmit = async (e) => {
     e.preventDefault()
