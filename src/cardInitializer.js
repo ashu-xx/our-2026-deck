@@ -1,5 +1,7 @@
+import { localStorageDB } from './localStorage'
+
 // Initialize cards for a year
-export async function initializeYearCards(year, supabase, isLocalDev) {
+export function initializeYearCards(year) {
   const suits = ['hearts', 'diamonds', 'clubs', 'spades']
   const cardsPerSuit = 13 // 52 cards / 4 suits = 13 cards per suit
 
@@ -13,7 +15,7 @@ export async function initializeYearCards(year, supabase, isLocalDev) {
     cards.push({
       title: `Week ${week}`,
       description: '',
-      suit: suit,
+      suit,
       deck_year: year,
       week_number: week,
       image_path: null,
@@ -23,37 +25,37 @@ export async function initializeYearCards(year, supabase, isLocalDev) {
   }
 
   // Create 2 joker cards (week 53 and 54)
-  cards.push({
-    title: 'Joker 1',
-    description: 'Wild card adventure!',
-    suit: 'joker',
-    deck_year: year,
-    week_number: 53,
-    image_path: null,
-    is_used: false,
-    created_at: new Date().toISOString()
-  })
-
-  cards.push({
-    title: 'Joker 2',
-    description: 'Another wild card adventure!',
-    suit: 'joker',
-    deck_year: year,
-    week_number: 54,
-    image_path: null,
-    is_used: false,
-    created_at: new Date().toISOString()
-  })
+  cards.push(
+    {
+      title: 'Joker 1',
+      description: 'Wild card adventure!',
+      suit: 'joker',
+      deck_year: year,
+      week_number: 53,
+      image_path: null,
+      is_used: false,
+      created_at: new Date().toISOString()
+    },
+    {
+      title: 'Joker 2',
+      description: 'Another wild card adventure!',
+      suit: 'joker',
+      deck_year: year,
+      week_number: 54,
+      image_path: null,
+      is_used: false,
+      created_at: new Date().toISOString()
+    }
+  )
 
   return cards
 }
 
 // Check if year needs initialization
 export async function checkAndInitializeYear(year, supabase, isLocalDev) {
-  let existingCards = []
+  let existingCards
 
   if (isLocalDev) {
-    const { localStorageDB } = await import('./localStorage.js')
     const allActivities = await localStorageDB.getActivities()
     existingCards = allActivities.filter(a => a.deck_year === year)
   } else {
@@ -65,7 +67,7 @@ export async function checkAndInitializeYear(year, supabase, isLocalDev) {
 
   // If year has less than 54 cards, initialize missing ones
   if (existingCards.length < 54) {
-    const newCards = await initializeYearCards(year, supabase, isLocalDev)
+    const newCards = initializeYearCards(year)
 
     // Filter out weeks that already exist
     const existingWeeks = new Set(existingCards.map(c => c.week_number))
@@ -73,7 +75,6 @@ export async function checkAndInitializeYear(year, supabase, isLocalDev) {
 
     if (cardsToAdd.length > 0) {
       if (isLocalDev) {
-        const { localStorageDB } = await import('./localStorage.js')
         for (const card of cardsToAdd) {
           await localStorageDB.insertActivity(card)
         }
@@ -87,11 +88,10 @@ export async function checkAndInitializeYear(year, supabase, isLocalDev) {
 // Get year configuration
 export function getYearConfig() {
   const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() // 0-11
 
-  // Based on current date (Dec 2025), set:
-  // pastYear = 2025
-  // upcomingYear = 2026
+  // At any point in time:
+  // - pastYear is the current calendar year
+  // - upcomingYear is the next calendar year
   const pastYear = currentYear
   const upcomingYear = currentYear + 1
 
@@ -102,4 +102,3 @@ export function getYearConfig() {
     availableYears: [pastYear - 1, pastYear, upcomingYear, upcomingYear + 1]
   }
 }
-
