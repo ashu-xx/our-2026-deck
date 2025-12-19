@@ -1,5 +1,5 @@
-import { json } from './_auth'
-import { kvConfigured } from './_kv'
+import { json } from './_auth.js'
+import { kvConfigured, getKvClient } from './_kv.js'
 
 const ENV_KEYS = [
   // App-mode flags
@@ -43,8 +43,7 @@ export default async function handler(req, res) {
     kvError = 'KV not configured (missing KV env vars)'
   } else {
     try {
-      // Lazy-load kv client only when configured.
-      const { kv } = await import('@vercel/kv')
+      const kv = await getKvClient()
       await kv.get('our-2026-deck:health')
       kvOk = true
     } catch (e) {

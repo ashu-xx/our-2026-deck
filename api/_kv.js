@@ -1,5 +1,3 @@
-import { kv } from '@vercel/kv'
-
 function present(k) {
   return Boolean(process.env[k])
 }
@@ -13,11 +11,7 @@ export function kvConfigured() {
   )
 }
 
-export async function kvGet(key) {
-  return kv.get(key)
+export async function getKvClient() {
+  const mod = await import('@vercel/kv')
+  return mod.kv
 }
-
-export async function kvSet(key, value) {
-  return kv.set(key, value)
-}
-

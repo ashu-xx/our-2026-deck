@@ -1,4 +1,4 @@
-import { json } from './_auth'
+import { json } from './_auth.js'
 
 // Unprotected ping route to validate that API functions are running at all.
 export default async function handler(req, res) {
@@ -15,4 +15,3 @@ export default async function handler(req, res) {
     }
   })
 }
-

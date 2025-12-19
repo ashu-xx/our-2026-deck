@@ -1,4 +1,4 @@
-import { requireBasicAuth, json } from './_auth'
+import { requireBasicAuth, json } from './_auth.js'
 
 export const config = {
   api: {
