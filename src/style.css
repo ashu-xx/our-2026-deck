@@ -1,5 +1,58 @@
 @import "tailwindcss";
 
+/* Common component primitives (prefer these over repeating long Tailwind class lists in templates) */
+@layer components {
+  .surface-card {
+    @apply bg-white rounded-2xl shadow-2xl;
+  }
+
+  .surface-glass-nav {
+    @apply bg-gradient-to-r from-xmas-green/95 to-green-900/95 backdrop-blur-md border-b-4 border-gold shadow-2xl;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center font-semibold transition-all;
+  }
+
+  .btn-pill {
+    @apply inline-flex items-center justify-center font-semibold transition-all;
+    @apply px-4 py-2 rounded-full shadow-lg;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center font-semibold transition-all;
+    @apply bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700;
+  }
+
+  .btn-success {
+    @apply inline-flex items-center justify-center font-semibold transition-all;
+    @apply bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800;
+  }
+
+  .btn-info {
+    @apply inline-flex items-center justify-center font-semibold transition-all;
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center font-semibold transition-all;
+    @apply bg-red-500 text-white hover:bg-red-600;
+  }
+
+  .tab-pill {
+    @apply px-8 py-3 rounded-full transition-all font-semibold text-xmas-green hover:text-green-900;
+  }
+
+  .tab-pill-active {
+    @apply bg-gradient-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg;
+  }
+
+  .input-field {
+    @apply w-full border-2 border-gray-300 rounded-xl text-black outline-none transition-all placeholder-gray-400;
+    @apply focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400;
+  }
+}
+
 @theme {
   --font-festive: Pacifico, cursive;
   --font-script: Dancing Script, cursive;
@@ -77,6 +130,7 @@
 .card-container:hover {
   transform: translateY(-10px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.05);
 }
 
 /* Gradient backgrounds for suits */
@@ -209,11 +263,6 @@ nav button:hover {
 
 .animate-pulse-ring {
   animation: pulse-ring 2s infinite;
-}
-
-/* Enhanced card hover with shadow */
-.card-container:hover {
-  filter: brightness(1.05);
 }
 
 /* Gradient text effect */

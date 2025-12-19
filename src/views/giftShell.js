@@ -1,7 +1,7 @@
 export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogout, onTabChange }) {
   app.innerHTML = `
     <div class="min-h-screen bg-pattern pb-20 relative overflow-hidden">
-      <nav class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-xmas-green/95 to-green-900/95 backdrop-blur-md border-b-4 border-gold shadow-2xl">
+      <nav class="fixed top-0 left-0 right-0 z-50 surface-glass-nav">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <div class="flex items-center space-x-3">
@@ -20,7 +20,7 @@ export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogo
                   <span class="text-white text-sm font-medium">${userEmail.split('@')[0]}</span>
                 </div>
               </div>
-              <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2">
+              <button id="logoutBtn" class="btn btn-danger btn-pill hover:shadow-xl transform hover:scale-105 flex items-center space-x-2">
                 <span>🚪</span>
                 <span>Logout</span>
               </button>
@@ -39,10 +39,10 @@ export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogo
         <h1 class="font-festive text-6xl text-gold mb-2 drop-shadow-2xl">Our Adventures Together</h1>
         <p class="font-script text-2xl text-white/90 mb-6">52 Weeks, Infinite Memories ✨</p>
         <div class="flex justify-center bg-white/20 p-1.5 rounded-full w-fit mx-auto backdrop-blur-md shadow-2xl border-2 border-white/30">
-          <button id="btnPast" class="px-8 py-3 rounded-full transition-all font-semibold text-xmas-green hover:text-green-900">
+          <button id="btnPast" class="tab-pill">
             <span class="mr-2">📸</span> ${pastYear} Memories
           </button>
-          <button id="btnUpcoming" class="px-8 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg">
+          <button id="btnUpcoming" class="tab-pill tab-pill-active">
             <span class="mr-2">🎴</span> ${upcomingYear} Adventures
           </button>
         </div>
@@ -76,9 +76,8 @@ export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogo
 function switchTab(btn, root) {
   const allBtns = root.querySelectorAll('header button')
   allBtns.forEach(b => {
-    b.classList.remove('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500', 'text-xmas-green', 'font-bold', 'shadow-lg', 'hover:text-green-900')
-    b.classList.add('text-xmas-green', 'hover:text-green-900')
+    b.classList.remove('tab-pill-active')
+    b.classList.add('tab-pill')
   })
-  btn.classList.remove('hover:text-green-900')
-  btn.classList.add('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500', 'text-xmas-green', 'font-bold', 'shadow-lg')
+  btn.classList.add('tab-pill-active')
 }

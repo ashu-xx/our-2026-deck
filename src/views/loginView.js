@@ -47,7 +47,7 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
                       type="email" 
                       id="email" 
                       placeholder="Enter your email" 
-                      class="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl text-black focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all placeholder-gray-400"
+                      class="input-field pl-12 pr-4 py-4"
                       required
                     >
                   </div>
@@ -60,14 +60,14 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
                       type="password" 
                       id="password" 
                       placeholder="Enter your password" 
-                      class="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl text-black focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all placeholder-gray-400"
+                      class="input-field pl-12 pr-4 py-4"
                       required
                     >
                   </div>
                 </div>
                 <button 
                   type="submit" 
-                  class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-4 rounded-xl font-bold text-lg hover:from-red-600 hover:to-red-700 transition-all shadow-lg transform hover:scale-[1.02] active:scale-[0.98] mt-6"
+                  class="btn btn-primary w-full py-4 rounded-xl font-bold text-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98] mt-6"
                 >
                   <span class="flex items-center justify-center space-x-2">
                     <span>Open Your Gift</span>
@@ -91,4 +91,3 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
     onSubmit({ email, password })
   })
 }
-

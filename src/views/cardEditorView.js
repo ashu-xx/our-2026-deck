@@ -1,6 +1,6 @@
 export function renderCardEditorView({ card, isEmpty }) {
   return `
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-in">
+    <div class="surface-card max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-in">
       <div class="sticky top-0 bg-gradient-to-r from-xmas-green to-green-900 text-white p-6 rounded-t-2xl border-b-4 border-gold">
         <div class="flex justify-between items-center">
           <div>
@@ -58,7 +58,7 @@ export function renderCardEditorView({ card, isEmpty }) {
         <div class="flex gap-3 pt-4">
           <button
             type="submit"
-            class="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-bold hover:from-green-700 hover:to-green-800 shadow-lg transition-all transform hover:scale-[1.02]"
+            class="btn btn-success flex-1 py-3 rounded-xl font-bold shadow-lg transition-all transform hover:scale-[1.02]"
           >
             💾 Save Changes
           </button>
@@ -74,4 +74,3 @@ export function renderCardEditorView({ card, isEmpty }) {
     </div>
   `
 }
-
