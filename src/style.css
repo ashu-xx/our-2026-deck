@@ -1,16 +1,152 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-festive: Pacifico, cursive;
+  --font-script: Dancing Script, cursive;
+
+  --color-xmas-red: #d63447;
+  --color-xmas-green: #1e5128;
+  --color-gold: #ffd700;
+  --color-soft-pink: #ffe5e5;
+  --color-lavender: #d4a5f9;
+  --color-mint: #a7f3d0;
+}
 
 .perspective {
   perspective: 1000px;
 }
+
 .transform-style-3d {
   transform-style: preserve-3d;
 }
+
 .backface-hidden {
   backface-visibility: hidden;
 }
+
 .rotate-y-180 {
   transform: rotateY(180deg);
+}
+
+/* Floating animation for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(-5deg); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 5s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.6s ease-out forwards;
+}
+
+/* Card hover effects */
+.card-container {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-container:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradient backgrounds for suits */
+.suit-hearts {
+  background: linear-gradient(135deg, #ffeef8 0%, #ffd7e8 100%);
+}
+
+.suit-diamonds {
+  background: linear-gradient(135deg, #fff9e6 0%, #ffe5b4 100%);
+}
+
+.suit-clubs {
+  background: linear-gradient(135deg, #e6f7ef 0%, #b8f2d6 100%);
+}
+
+.suit-spades {
+  background: linear-gradient(135deg, #f0e6ff 0%, #dfc7ff 100%);
+}
+
+.suit-joker {
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+}
+
+/* Decorative background pattern */
+.bg-pattern {
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(212, 165, 249, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(167, 243, 208, 0.1) 0%, transparent 50%);
+}
+
+/* Card flip animation enhancement */
+.card-inner {
+  transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Joker special styling */
+.joker-shimmer {
+  background: linear-gradient(
+    45deg,
+    #ffd700 0%,
+    #ffed4e 25%,
+    #ffd700 50%,
+    #ffed4e 75%,
+    #ffd700 100%
+  );
+  background-size: 200% 200%;
+  animation: shimmer 3s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 81, 40, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffd700;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffed4e;
 }

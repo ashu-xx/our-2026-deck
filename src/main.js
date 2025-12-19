@@ -58,16 +58,44 @@ function renderLogin() {
   const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
 
   app.innerHTML = `
-    <div class="min-h-screen flex items-center justify-center bg-xmas-green p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-4 border-gold">
-            <h1 class="font-festive text-4xl text-xmas-green mb-2 text-center">Our 2026 Journey</h1>
-            <p class="text-center text-gray-500 mb-6 text-sm italic">A year of love and adventure</p>
-            ${isLocalDev ? '<div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-3 py-2 rounded mb-4 text-xs"><strong>Local Dev Mode</strong><br/>Admin: admin@example.com / password123<br/>User: user@example.com / password123</div>' : ''}
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="email" placeholder="Email" class="w-full p-3 border rounded-lg text-black focus:ring-2 focus:ring-gold outline-none" required>
-                <input type="password" id="password" placeholder="Password" class="w-full p-3 border rounded-lg text-black focus:ring-2 focus:ring-gold outline-none" required>
-                <button type="submit" class="w-full bg-xmas-red text-white py-3 rounded-lg font-bold hover:scale-105 transition-transform shadow-lg">Open Your Gift 🎁</button>
+    <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-800 via-green-700 to-green-900 relative overflow-hidden">
+        <!-- Animated background decorations -->
+        <div class="fixed top-10 left-10 text-6xl animate-float opacity-30">🎄</div>
+        <div class="fixed top-20 right-20 text-5xl animate-float-reverse opacity-30">❄️</div>
+        <div class="fixed bottom-20 left-1/4 text-5xl animate-float opacity-30">🌸</div>
+        <div class="fixed bottom-32 right-1/4 text-6xl animate-float-reverse opacity-30">🦋</div>
+        <div class="fixed top-1/2 left-10 text-4xl animate-sparkle opacity-20">✨</div>
+        <div class="fixed top-1/2 right-10 text-4xl animate-sparkle opacity-20">💫</div>
+        
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border-4 border-yellow-400 relative z-10 animate-slide-in">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-4 animate-float">💝</div>
+              <h1 class="font-festive text-5xl text-xmas-green mb-2">Our 2026 Journey</h1>
+              <p class="font-script text-xl text-gray-600 italic">A year of love and adventure</p>
+              <div class="mt-4 flex justify-center gap-3 text-3xl">
+                <span class="animate-float">🦊</span>
+                <span class="animate-float-reverse">🌺</span>
+                <span class="animate-float">🎴</span>
+              </div>
+            </div>
+            
+            ${isLocalDev ? '<div class="bg-yellow-100 border-2 border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg mb-6 text-xs"><strong>🔧 Local Dev Mode</strong><br/>Admin: admin@example.com / password123<br/>User: user@example.com / password123</div>' : ''}
+            
+            <form id="loginForm" class="space-y-5">
+                <div>
+                  <input type="email" id="email" placeholder="✉️ Email" class="w-full p-4 border-2 border-gray-300 rounded-xl text-black focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all">
+                </div>
+                <div>
+                  <input type="password" id="password" placeholder="🔑 Password" class="w-full p-4 border-2 border-gray-300 rounded-xl text-black focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-4 rounded-xl font-bold text-lg hover:from-red-600 hover:to-red-700 transition-all shadow-lg transform hover:scale-[1.02]">
+                  Open Your Gift 🎁
+                </button>
             </form>
+            
+            <div class="mt-6 text-center text-xs text-gray-500">
+              <p class="font-script text-sm">Made with love for the adventures ahead ✨</p>
+            </div>
         </div>
     </div>`
 
