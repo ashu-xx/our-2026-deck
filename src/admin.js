@@ -3,9 +3,53 @@ import { localStorageDB } from './localStorage'
 export async function renderAdminDashboard(app, supabase) {
   const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
 
+  // Get user email
+  let userEmail = ''
+  if (isLocalDev) {
+    const localUser = JSON.parse(localStorage.getItem('localDevUser'))
+    userEmail = localUser?.email || 'Admin'
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    userEmail = user?.email || 'Admin'
+  }
+
   app.innerHTML = `
-    <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
-      <div class="max-w-2xl mx-auto">
+    <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <!-- Top Navigation Bar -->
+      <nav class="bg-gradient-to-r from-xmas-green to-green-900 border-b-4 border-gold shadow-2xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <!-- Logo/Brand -->
+            <div class="flex items-center space-x-3">
+              <span class="text-3xl animate-float">🎴</span>
+              <div>
+                <h2 class="font-festive text-xl text-gold">Admin Dashboard</h2>
+                <p class="text-white/70 text-xs font-script">Manage Adventures</p>
+              </div>
+            </div>
+            
+            <!-- User Menu -->
+            <div class="flex items-center space-x-4">
+              <div class="hidden sm:flex items-center space-x-3 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                  👑
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-white text-xs font-medium">${userEmail.split('@')[0]}</span>
+                  <span class="text-yellow-300 text-xs font-bold">Admin</span>
+                </div>
+              </div>
+              <button id="logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2">
+                <span>🚪</span>
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="p-6">
+        <div class="max-w-2xl mx-auto">
         ${isLocalDev ? `
         <div class="bg-blue-100 border-2 border-blue-400 text-blue-800 px-4 py-3 rounded-lg mb-4 text-sm">
           <strong>🔧 Local Dev Mode Active</strong><br/>
@@ -13,12 +57,9 @@ export async function renderAdminDashboard(app, supabase) {
         </div>
         ` : ''}
         <div class="bg-white p-8 rounded-2xl shadow-2xl border-4 border-yellow-400 mb-6">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 class="text-3xl font-bold text-xmas-green font-festive">Admin Panel 🎴</h2>
-              <p class="text-sm text-gray-500 mt-1">Create magical memories for 2026</p>
-            </div>
-            <button id="logout" class="text-xs text-red-500 hover:text-red-700 underline font-semibold">Logout</button>
+          <div class="mb-6">
+            <h2 class="text-3xl font-bold text-xmas-green font-festive mb-2">Create Activity 🎴</h2>
+            <p class="text-sm text-gray-500">Add magical memories for 2026</p>
           </div>
           
           <form id="activityForm" class="space-y-5 text-black">
@@ -115,6 +156,7 @@ export async function renderAdminDashboard(app, supabase) {
           <p class="text-xs text-gray-500 mt-3">Export your data to back it up, or clear all to start fresh. Import previously exported data to restore.</p>
         </div>
         ` : ''}
+        </div>
       </div>
     </div>`
 

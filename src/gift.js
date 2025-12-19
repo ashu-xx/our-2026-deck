@@ -3,6 +3,16 @@ import { localStorageDB } from './localStorage'
 export async function renderGiftView(app, supabase) {
   const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
 
+  // Get user email
+  let userEmail = ''
+  if (isLocalDev) {
+    const localUser = JSON.parse(localStorage.getItem('localDevUser'))
+    userEmail = localUser?.email || 'Guest'
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    userEmail = user?.email || 'Guest'
+  }
+
   // Use local storage in dev mode, Supabase in production
   let activities = []
   if (isLocalDev) {
@@ -15,21 +25,51 @@ export async function renderGiftView(app, supabase) {
 
   app.innerHTML = `
     <div class="min-h-screen bg-pattern pb-20 relative overflow-hidden">
+      <!-- Top Navigation Bar -->
+      <nav class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-xmas-green/95 to-green-900/95 backdrop-blur-md border-b-4 border-gold shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <!-- Logo/Brand -->
+            <div class="flex items-center space-x-3">
+              <span class="text-3xl animate-float">💝</span>
+              <div>
+                <h2 class="font-festive text-xl text-gold">Our 2026 Deck</h2>
+                <p class="text-white/70 text-xs font-script">Adventures Together</p>
+              </div>
+            </div>
+            
+            <!-- User Menu -->
+            <div class="flex items-center space-x-4">
+              <div class="hidden sm:flex items-center space-x-3 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-gold rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                  ${userEmail.charAt(0).toUpperCase()}
+                </div>
+                <span class="text-white text-sm font-medium">${userEmail.split('@')[0]}</span>
+              </div>
+              <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold text-sm transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2">
+                <span>🚪</span>
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <!-- Floating decorative elements -->
-      <div class="fixed top-10 left-10 text-6xl animate-float opacity-20">🦋</div>
-      <div class="fixed top-20 right-20 text-5xl animate-float-reverse opacity-20">🌸</div>
+      <div class="fixed top-24 left-10 text-6xl animate-float opacity-20">🦋</div>
+      <div class="fixed top-32 right-20 text-5xl animate-float-reverse opacity-20">🌸</div>
       <div class="fixed bottom-20 left-20 text-5xl animate-float opacity-20">🦊</div>
       <div class="fixed bottom-32 right-32 text-6xl animate-float-reverse opacity-20">🌺</div>
       <div class="fixed top-1/3 left-1/4 text-4xl animate-sparkle opacity-15">✨</div>
       <div class="fixed top-2/3 right-1/4 text-4xl animate-sparkle opacity-15">🎄</div>
       
-      <header class="p-10 text-center relative z-10">
+      <header class="pt-24 p-10 text-center relative z-10">
         <div class="mb-4 text-6xl animate-float">💝</div>
         <h1 class="font-festive text-6xl text-gold mb-2 drop-shadow-2xl">Our Adventures Together</h1>
         <p class="font-script text-2xl text-white/90 mb-6">52 Weeks, Infinite Memories ✨</p>
         
         <div class="flex justify-center bg-white/20 p-1.5 rounded-full w-fit mx-auto backdrop-blur-md shadow-2xl border-2 border-white/30">
-          <button id="btn25" class="px-8 py-3 rounded-full transition-all font-semibold text-white">
+          <button id="btn25" class="px-8 py-3 rounded-full transition-all font-semibold text-xmas-green hover:text-green-900">
             <span class="mr-2">📸</span> 2025 Memories
           </button>
           <button id="btn26" class="px-8 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-xmas-green font-bold shadow-lg">
@@ -42,6 +82,17 @@ export async function renderGiftView(app, supabase) {
     </div>`
 
   const deck = document.querySelector('#deck')
+
+  // Logout button handler
+  document.querySelector('#logoutBtn').onclick = () => {
+    const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
+    if (isLocalDev) {
+      localStorage.removeItem('localDevUser')
+      location.reload()
+    } else {
+      supabase.auth.signOut().then(() => location.reload())
+    }
+  }
 
   async function loadYear(year) {
     deck.innerHTML = '<div class="col-span-full text-center"><div class="inline-block bg-white/90 px-8 py-4 rounded-full shadow-xl"><span class="text-gold animate-pulse text-xl font-script">Shuffling the deck... 🎴✨</span></div></div>'
@@ -87,7 +138,7 @@ export async function renderGiftView(app, supabase) {
           <!-- Card Front (Activity details) -->
           <div class="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-2xl border-4 border-white overflow-hidden flex flex-col shadow-2xl">
             <div class="relative h-40 overflow-hidden">
-              <img src="${imgUrl}" class="h-full w-full object-cover">
+              <img src="${imgUrl}" alt="${act.title}" class="h-full w-full object-cover">
               <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
                 ${suitSymbol}
               </div>
@@ -105,7 +156,7 @@ export async function renderGiftView(app, supabase) {
                   ${act.is_used ? '✓ COMPLETED! 🎉' : '⚡ DOUBLE TAP TO MARK DONE'}
                 </div>
               ` : `
-                <div class="mt-3 bg-gradient-to-r from-pink-300 to-pink-400 text-xs text-center font-script text-lg py-2 text-white rounded-lg shadow-md">
+                <div class="mt-3 bg-gradient-to-r from-pink-300 to-pink-400 text-center font-script text-lg py-2 text-white rounded-lg shadow-md">
                   Beautiful Memory 💕
                 </div>
               `}
@@ -202,18 +253,27 @@ export async function renderGiftView(app, supabase) {
     }[s] || 'Special'
   }
 
-  document.querySelector('#btn25').onclick = (e) => { switchTab(e.target); loadYear(2025) }
-  document.querySelector('#btn26').onclick = (e) => { switchTab(e.target); loadYear(2026) }
+  document.querySelector('#btn25').onclick = () => {
+    switchTab(document.querySelector('#btn25'))
+    loadYear(2025)
+  }
+
+  document.querySelector('#btn26').onclick = () => {
+    switchTab(document.querySelector('#btn26'))
+    loadYear(2026)
+  }
 
   function switchTab(btn) {
     const allBtns = document.querySelectorAll('header button')
     allBtns.forEach(b => {
-      b.classList.remove('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500', 'text-xmas-green', 'font-bold', 'shadow-lg')
-      b.classList.add('text-white')
+      b.classList.remove('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500', 'text-xmas-green', 'font-bold', 'shadow-lg', 'hover:text-green-900')
+      b.classList.add('text-xmas-green', 'hover:text-green-900')
     })
-    btn.classList.remove('text-white')
+    btn.classList.remove('hover:text-green-900')
     btn.classList.add('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500', 'text-xmas-green', 'font-bold', 'shadow-lg')
   }
 
+  // Start with 2026 view
+  switchTab(document.querySelector('#btn26'))
   loadYear(2026)
 }
