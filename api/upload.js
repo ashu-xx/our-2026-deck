@@ -1,10 +1,13 @@
-import { put } from '@vercel/blob'
 import { requireBasicAuth, json } from './_auth'
 
 export const config = {
   api: {
     bodyParser: false
   }
+}
+
+function blobConfigured() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 }
 
 async function readMultipartFile(req) {
@@ -52,12 +55,19 @@ export default async function handler(req, res) {
   try {
     if (!requireBasicAuth(req, res)) return
 
+    if (!blobConfigured()) {
+      return json(res, 500, { error: 'Vercel Blob is not configured for this deployment.' })
+    }
+
     if (req.method !== 'POST') {
       res.setHeader('Allow', 'POST')
       return json(res, 405, { error: 'Method not allowed' })
     }
 
     const { filename, contentType, buffer } = await readMultipartFile(req)
+
+    // Lazy-load blob client to avoid crashing the function when Blob env is missing.
+    const { put } = await import('@vercel/blob')
 
     const key = `activity-images/${Date.now()}-${filename}`
     const blob = await put(key, buffer, {

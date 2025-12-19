@@ -1,11 +1,18 @@
-import { kv } from '@vercel/kv'
 import { requireBasicAuth, json } from '../_auth'
+import { kvConfigured } from '../_kv'
 
 const KEY = 'our-2026-deck:activities'
 
 export default async function handler(req, res) {
   try {
     if (!requireBasicAuth(req, res)) return
+
+    if (!kvConfigured()) {
+      return json(res, 500, { error: 'Vercel KV is not configured for this deployment.' })
+    }
+
+    // Lazy-load kv client to avoid crashing the function when KV env is missing.
+    const { kv } = await import('@vercel/kv')
 
     if (req.method !== 'PATCH') {
       res.setHeader('Allow', 'PATCH')
