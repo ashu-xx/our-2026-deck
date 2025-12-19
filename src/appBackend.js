@@ -172,19 +172,20 @@ export const appBackend = {
       for (const a of activities) await localStorageDB.insertActivity(a)
       return
     }
-    const res = await request('/api/activities')
-    const all = res.activities || []
-    await request('/api/activities', { method: 'PUT', body: { activities: [...all, ...activities] } })
+    // Use PUT to upsert only the new activities (merges with existing by ID)
+    await request('/api/activities', { method: 'PUT', body: { activities } })
   },
 
-  async updateActivity(id, updates, explicitIsLocalDev) {
+  async updateActivity(activity, explicitIsLocalDev) {
     const isLocalDev = isLocalDevMode(explicitIsLocalDev)
     if (isLocalDev) {
-      const { error } = await localStorageDB.updateActivity(id, updates)
+      const { error } = await localStorageDB.updateActivity(activity.id, activity)
       if (error) throw new Error(error.message)
       return
     }
-    await request(`/api/activities/${encodeURIComponent(id)}`, { method: 'PATCH', body: updates })
+
+    // Send just this one activity via PUT - backend will merge by ID
+    await request('/api/activities', { method: 'PUT', body: { activities: [activity] } })
   },
 
   // ---- Images ----
@@ -193,7 +194,8 @@ export const appBackend = {
     if (isLocalDev) {
       const { data, error } = await localStorageDB.uploadImage(file)
       if (error) throw new Error(error.message)
-      return { image_path: data.path, url: localStorageDB.getImageUrl(data.path) }
+      const url = await localStorageDB.getImageUrl(data.path)
+      return { image_path: data.path, url }
     }
 
     const fd = new FormData()
@@ -202,7 +204,7 @@ export const appBackend = {
     return { image_path: res.url, url: res.url }
   },
 
-  getImageUrl(imagePath, explicitIsLocalDev) {
+  async getImageUrl(imagePath, explicitIsLocalDev) {
     const isLocalDev = isLocalDevMode(explicitIsLocalDev)
     if (!imagePath) return null
     if (isLocalDev) return localStorageDB.getImageUrl(imagePath)

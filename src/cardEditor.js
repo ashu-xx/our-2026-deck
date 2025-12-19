@@ -39,20 +39,16 @@ export function showCardEditor(card, isLocalDev, onSave) {
       const { image_path } = await dataStore.uploadImage(file, isLocalDev)
       pendingImagePath = image_path
 
-      isUploading = false
       fileStatus.textContent = 'Uploaded'
       fileStatus.classList.remove('text-gray-700', 'text-red-600')
       fileStatus.classList.add('text-green-600')
-      if (submitBtn) {
-        submitBtn.disabled = false
-        submitBtn.innerHTML = '💾 Save Changes'
-      }
     } catch (err) {
-      isUploading = false
-      fileStatus.textContent = err.message || 'Upload failed'
+      fileStatus.textContent = err?.message || 'Upload failed'
       fileStatus.classList.remove('text-gray-700', 'text-green-600')
       fileStatus.classList.add('text-red-600')
       pendingImagePath = card.image_path
+    } finally {
+      isUploading = false
       if (submitBtn) {
         submitBtn.disabled = false
         submitBtn.innerHTML = '💾 Save Changes'
@@ -99,7 +95,7 @@ export function showCardEditor(card, isLocalDev, onSave) {
 
       modal.remove()
     } catch (err) {
-      alert(err.message || 'Failed to save card')
+      alert(err?.message || 'Failed to save card')
       submitBtn.disabled = false
       submitBtn.innerHTML = '💾 Save Changes'
     }

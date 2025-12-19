@@ -1,6 +1,7 @@
+import { getImage, putImage } from './localImageStore'
+
 // Local Storage Service for offline/local dev mode
 const STORAGE_KEY = 'our-2026-deck-activities'
-const IMAGES_KEY = 'our-2026-deck-images'
 
 // Initialize with sample data if empty
 function initializeSampleData() {
@@ -16,7 +17,6 @@ function initializeSampleData() {
         description: 'New Year\'s walk with deer spotting and hot chocolate',
         suit: 'clubs',
         deck_year: nowYear + 1,
-        week_number: 1,
         planned_date: `${nowYear + 1}-01-03`,
         image_path: null,
         is_used: false,
@@ -28,7 +28,6 @@ function initializeSampleData() {
         description: 'Our favorite films, popcorn, and blankets',
         suit: 'spades',
         deck_year: nowYear + 1,
-        week_number: 2,
         planned_date: `${nowYear + 1}-01-10`,
         image_path: null,
         is_used: false,
@@ -40,7 +39,6 @@ function initializeSampleData() {
         description: 'Art, cocktails, and culture on a Friday evening',
         suit: 'hearts',
         deck_year: nowYear + 1,
-        week_number: 3,
         planned_date: `${nowYear + 1}-01-17`,
         image_path: null,
         is_used: false,
@@ -54,7 +52,6 @@ function initializeSampleData() {
         description: `A little placeholder memory to prove the ${nowYear} tab works in local dev.`,
         suit: 'diamonds',
         deck_year: nowYear,
-        week_number: 1,
         planned_date: `${nowYear}-01-06`,
         image_path: null,
         is_used: true,
@@ -66,7 +63,6 @@ function initializeSampleData() {
         description: 'Blankets, tea, and planning our next adventure.',
         suit: 'spades',
         deck_year: nowYear,
-        week_number: 2,
         planned_date: `${nowYear}-01-13`,
         image_path: null,
         is_used: true,
@@ -120,50 +116,36 @@ export const localStorageDB = {
     return { error: null }
   },
 
-  // Store image as base64
+  // Store image in IndexedDB as a Blob
   async uploadImage(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const images = JSON.parse(localStorage.getItem(IMAGES_KEY) || '{}')
-        const imageId = `img-${Date.now()}-${file.name}`
-        images[imageId] = {
-          data: reader.result,
-          name: file.name,
-          type: file.type
-        }
-        localStorage.setItem(IMAGES_KEY, JSON.stringify(images))
-        resolve({ data: { path: imageId }, error: null })
-      }
-      reader.onerror = () => reject({ error: { message: 'Failed to read image' } })
-      reader.readAsDataURL(file)
-    })
+    const imageId = `img-${Date.now()}-${Math.random().toString(36).substring(2, 11)}-${file.name}`
+    await putImage(imageId, file)
+    return { data: { path: imageId }, error: null }
   },
 
-  // Get image URL
-  getImageUrl(imagePath) {
+  // Get image URL (object URL)
+  async getImageUrl(imagePath) {
     if (!imagePath) return null
-    const images = JSON.parse(localStorage.getItem(IMAGES_KEY) || '{}')
-    return images[imagePath]?.data || null
+    const blob = await getImage(imagePath)
+    if (!blob) return null
+    return URL.createObjectURL(blob)
   },
 
   // Clear all data (useful for testing)
   clearAll() {
     localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem(IMAGES_KEY)
+    // Images are in IndexedDB; keep clearAll lightweight.
   },
 
   // Export data
   exportData() {
     return {
-      activities: localStorage.getItem(STORAGE_KEY),
-      images: localStorage.getItem(IMAGES_KEY)
+      activities: localStorage.getItem(STORAGE_KEY)
     }
   },
 
   // Import data
   importData(data) {
     if (data.activities) localStorage.setItem(STORAGE_KEY, data.activities)
-    if (data.images) localStorage.setItem(IMAGES_KEY, data.images)
   }
 }

@@ -125,7 +125,9 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
           index,
           monthLabel: label,
           onEdit: async (id, updates) => {
-            await dataStore.updateActivity(id, updates, isLocalDev)
+            // Merge updates with current activity data
+            const updatedActivity = { ...act, ...updates, id, updated_at: new Date().toISOString() }
+            await dataStore.updateActivity(updatedActivity, isLocalDev)
             await renderMonthWise()
           },
           onToggle: async () => {

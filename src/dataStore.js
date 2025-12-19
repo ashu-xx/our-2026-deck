@@ -14,8 +14,8 @@ export const dataStore = {
     return appBackend.listActivities(isLocalDevMode(explicitIsLocalDev))
   },
 
-  async updateActivity(id, updates, explicitIsLocalDev) {
-    return appBackend.updateActivity(id, updates, isLocalDevMode(explicitIsLocalDev))
+  async updateActivity(activity, explicitIsLocalDev) {
+    return appBackend.updateActivity(activity, isLocalDevMode(explicitIsLocalDev))
   },
 
   async insertActivities(activities, explicitIsLocalDev) {
@@ -26,7 +26,7 @@ export const dataStore = {
     return appBackend.uploadImage(file, isLocalDevMode(explicitIsLocalDev))
   },
 
-  getImageUrl(imagePath, explicitIsLocalDev) {
+  async getImageUrl(imagePath, explicitIsLocalDev) {
     return appBackend.getImageUrl(imagePath, isLocalDevMode(explicitIsLocalDev))
   }
 }

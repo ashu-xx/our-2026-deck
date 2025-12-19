@@ -15,17 +15,15 @@ export function getSuitMeta(suit) {
 
 export async function fetchImageUrl(act, isLocalDev) {
   const fallback = '/vite.svg'
-  if (!act.image_path) return fallback
+  if (!act?.image_path) return fallback
 
-  const url = dataStore.getImageUrl(act.image_path, isLocalDev)
-  if (!url) return fallback
-
-  const cacheBuster = act.updated_at || act.id || ''
-  return cacheBuster ? `${url}?v=${encodeURIComponent(cacheBuster)}` : url
+  const url = await dataStore.getImageUrl(act.image_path, isLocalDev)
+  return url || fallback
 }
 
 export async function toggleUsage(act, isLocalDev) {
-  await dataStore.updateActivity(act.id, { is_used: !act.is_used }, isLocalDev)
+  const updated = { ...act, is_used: !act.is_used, updated_at: new Date().toISOString() }
+  await dataStore.updateActivity(updated, isLocalDev)
 }
 
 export function celebrateIfNeeded(act) {

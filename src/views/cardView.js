@@ -10,7 +10,18 @@ export function renderCardView({
   const { symbol, emoji, label } = suitMeta
 
   const cacheBuster = act.updated_at || act.id || ''
-  const imgSrc = cacheBuster ? `${imgUrl}?v=${encodeURIComponent(cacheBuster)}` : imgUrl
+
+  // Don't append query params to blob: URLs (they're already unique per object URL).
+  // Also avoid appending a second cache-buster if the URL already has one.
+  let imgSrc = imgUrl
+  if (cacheBuster && imgUrl && !String(imgUrl).startsWith('blob:')) {
+    const u = String(imgUrl)
+    if (!/[?&]v=/.test(u)) {
+      imgSrc = u.includes('?')
+        ? `${u}&v=${encodeURIComponent(cacheBuster)}`
+        : `${u}?v=${encodeURIComponent(cacheBuster)}`
+    }
+  }
 
   return `
     <div class="card-inner w-full h-full relative ${isFlipped}"
