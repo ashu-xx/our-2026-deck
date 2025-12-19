@@ -23,9 +23,22 @@ export default async function handler(req, res) {
       for await (const chunk of req) chunks.push(chunk)
       const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf-8')) : {}
 
-      const activities = Array.isArray(body.activities) ? body.activities : []
-      await kv.set(KEY, activities)
-      return json(res, 200, { ok: true, count: activities.length })
+      const incoming = Array.isArray(body.activities) ? body.activities : []
+      const existing = ((await kv.get(KEY)) || []).reduce((map, a) => {
+        map[String(a.id)] = a
+        return map
+      }, {})
+
+      const merged = incoming.map((a) => {
+        const prev = existing[String(a.id)] || {}
+        return {
+          ...a,
+          updated_at: a.updated_at || prev.updated_at || new Date().toISOString()
+        }
+      })
+
+      await kv.set(KEY, merged)
+      return json(res, 200, { ok: true, count: merged.length })
     }
 
     res.setHeader('Allow', 'GET, PUT')

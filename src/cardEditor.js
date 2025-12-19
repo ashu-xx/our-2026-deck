@@ -39,9 +39,12 @@ export function showCardEditor(card, isLocalDev, onSave) {
         title: document.getElementById('editTitle').value,
         description: document.getElementById('editDescription').value,
         suit: document.getElementById('editSuit').value,
-        image_path: imagePath,
         planned_date,
         updated_at: new Date().toISOString()
+      }
+
+      if (file) {
+        updates.image_path = imagePath
       }
 
       if (onSave) {

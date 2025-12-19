@@ -1,5 +1,6 @@
 import { requireBasicAuth, json } from './_auth.js'
 import Busboy from 'busboy'
+import crypto from 'node:crypto'
 
 export const config = {
   api: {
@@ -60,7 +61,7 @@ export default async function handler(req, res) {
 
     const { put } = await import('@vercel/blob')
 
-    const key = `activity-images/${Date.now()}-${filename}`
+    const key = `activity-images/${Date.now()}-${crypto.randomUUID()}-${filename}`
     const blob = await put(key, buffer, {
       access: 'public',
       contentType

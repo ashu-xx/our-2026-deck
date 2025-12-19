@@ -18,7 +18,10 @@ export async function fetchImageUrl(act, isLocalDev) {
   if (!act.image_path) return fallback
 
   const url = dataStore.getImageUrl(act.image_path, isLocalDev)
-  return url || fallback
+  if (!url) return fallback
+
+  const cacheBuster = act.updated_at || act.id || ''
+  return cacheBuster ? `${url}?v=${encodeURIComponent(cacheBuster)}` : url
 }
 
 export async function toggleUsage(act, isLocalDev) {

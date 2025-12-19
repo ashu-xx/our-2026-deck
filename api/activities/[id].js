@@ -24,6 +24,12 @@ export default async function handler(req, res) {
     for await (const chunk of req) chunks.push(chunk)
     const updates = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf-8')) : {}
 
+    if (updates.image_path === undefined || updates.image_path === null || updates.image_path === '') {
+      delete updates.image_path
+    }
+
+    updates.updated_at = updates.updated_at || new Date().toISOString()
+
     const activities = (await kv.get(KEY)) || []
     const idx = activities.findIndex((a) => String(a.id) === String(id))
     if (idx === -1) return json(res, 404, { error: 'Not found' })
