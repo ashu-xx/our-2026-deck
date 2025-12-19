@@ -285,6 +285,10 @@ select:focus {
   }
 
   /* Adjust image heights on mobile for proper fit */
+  .card-inner .h-56 {
+    height: 11rem;
+  }
+
   .card-inner .h-40 {
     height: 8rem;
   }
@@ -293,6 +297,14 @@ select:focus {
   .card-inner button {
     min-height: 32px;
     min-width: 32px;
+  }
+
+  /* Limit description to 2 lines on mobile */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
