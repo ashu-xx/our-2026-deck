@@ -14,6 +14,7 @@ function initializeSampleData() {
         suit: 'clubs',
         deck_year: 2026,
         week_number: 1,
+        planned_date: '2026-01-03',
         image_path: null,
         is_used: false,
         created_at: new Date().toISOString()
@@ -25,6 +26,7 @@ function initializeSampleData() {
         suit: 'spades',
         deck_year: 2026,
         week_number: 2,
+        planned_date: '2026-01-10',
         image_path: null,
         is_used: false,
         created_at: new Date().toISOString()
@@ -36,6 +38,7 @@ function initializeSampleData() {
         suit: 'hearts',
         deck_year: 2026,
         week_number: 3,
+        planned_date: '2026-01-17',
         image_path: null,
         is_used: false,
         created_at: new Date().toISOString()
@@ -134,4 +137,3 @@ export const localStorageDB = {
     if (data.images) localStorage.setItem(IMAGES_KEY, data.images)
   }
 }
-

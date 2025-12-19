@@ -2,6 +2,7 @@ import { localStorageDB } from './localStorage'
 import { celebrateIfNeeded, fetchImageUrl, SUIT_META, toggleUsage } from './cardUtils'
 import { createDeckCard } from './renderCard'
 import { renderGiftShell } from './views/giftShell'
+import { renderMonthView } from './views/monthView'
 import { checkAndInitializeYear, getYearConfig } from './cardInitializer'
 
 export async function renderGiftView(app, supabase) {
@@ -27,19 +28,44 @@ export async function renderGiftView(app, supabase) {
   }
 
   let activities = []
+
+  // Helpers: prefer planned_date only
+  function dateKeyOrDefault(act) {
+    const t = Date.parse(act.planned_date)
+    if (Number.isFinite(t)) return t
+    return Date.parse(`${act.deck_year}-12-01`)
+  }
+
+  function monthIndexOrDefault(act) {
+    const t = Date.parse(act.planned_date)
+    if (Number.isFinite(t)) return new Date(t).getMonth()
+    return 11
+  }
+
   async function refreshActivities() {
     if (isLocalDev) {
       activities = await localStorageDB.getActivities()
-      activities.sort((a, b) => a.week_number - b.week_number)
     } else {
-      const { data } = await supabase.from('activities').select('*').order('week_number', { ascending: true })
+      const { data } = await supabase.from('activities').select('*')
       activities = data || []
     }
+
+    // Ensure every activity has a planned_date (defensive, should already be backfilled)
+    activities = activities.map(a => ({
+      ...a,
+      planned_date: a.planned_date || `${a.deck_year}-12-01`
+    }))
+
+    // Past-year cards are treated as completed/revealed
+    activities = activities.map(a => (a.deck_year === pastYear ? { ...a, is_used: true } : a))
+
+    activities.sort((a, b) => dateKeyOrDefault(a) - dateKeyOrDefault(b))
   }
 
+  // IMPORTANT: actually fetch activities before first render
   await refreshActivities()
 
-  const { deckEl, switchToYear } = renderGiftShell({
+  const { deckEl, setYearActive } = renderGiftShell({
     app,
     pastYear,
     upcomingYear,
@@ -52,63 +78,77 @@ export async function renderGiftView(app, supabase) {
         supabase.auth.signOut().then(() => location.reload())
       }
     },
-    onTabChange: (tab) => {
-      const year = tab === 'past' ? pastYear : upcomingYear
-      switchToYear(year)
-      loadYear(year)
+    onYearChange: async (nextYear) => {
+      currentYear = nextYear
+      setYearActive(currentYear)
+      await renderMonthWise()
     }
   })
 
   let currentYear = upcomingYear
 
-  async function loadYear(year) {
-    currentYear = year
-    deckEl.innerHTML = '<div class="col-span-full text-center"><div class="inline-block bg-white/90 px-8 py-4 rounded-full shadow-xl"><span class="text-gold animate-pulse text-xl font-script">Shuffling the deck... 🎴✨</span></div></div>'
-    const filtered = activities.filter(a => a.deck_year === year)
+  function monthNameFromIso(iso) {
+    const t = Date.parse(iso)
+    const d = Number.isFinite(t) ? new Date(t) : new Date(currentYear, 11, 1)
+    return d.toLocaleString(undefined, { month: 'long' }).toUpperCase()
+  }
+
+  function getMonthIndex(act) {
+    return monthIndexOrDefault(act)
+  }
+
+  async function renderMonthWise() {
+    await refreshActivities()
+
+    const filtered = activities.filter(a => a.deck_year === currentYear)
+
+    const monthBuckets = new Map()
+    for (const act of filtered) {
+      const monthIndex = act.suit === 'joker' ? 11 : getMonthIndex(act)
+      if (!monthBuckets.has(monthIndex)) monthBuckets.set(monthIndex, [])
+      monthBuckets.get(monthIndex).push(act)
+    }
+
+    const sortedMonths = [...monthBuckets.keys()].sort((a, b) => a - b)
+
     deckEl.innerHTML = ''
 
-    const cards = await Promise.all(filtered.map((act, index) => createDeckCard(act, {
-      year,
-      pastYear,
-      upcomingYear,
-      isLocalDev,
-      supabase,
-      index,
-      onEdit: async (id, updates) => {
-        if (isLocalDev) {
-          await localStorageDB.updateActivity(id, updates)
-        } else {
-          await supabase.from('activities').update(updates).eq('id', id)
-        }
-        await refreshActivities()
-        loadYear(currentYear)
-      },
-      onToggle: async () => {
-        await toggleUsage(act, isLocalDev, supabase)
-        celebrateIfNeeded(act)
-        await refreshActivities()
-        loadYear(currentYear)
-      },
-      getSuitMeta: (suit) => SUIT_META[suit] || SUIT_META.default,
-      fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev, supabase)
-    })))
+    for (const monthIndex of sortedMonths) {
+      const sectionWrapper = document.createElement('div')
+      sectionWrapper.innerHTML = renderMonthView({ year: currentYear, monthIndex })
+      const section = sectionWrapper.firstElementChild
+      const grid = section.querySelector('[data-month-grid]')
 
-    cards.forEach(card => deckEl.appendChild(card))
+      const acts = monthBuckets.get(monthIndex)
+      const label = monthNameFromIso(acts.find(a => a.planned_date)?.planned_date || `${currentYear}-12-01`)
 
-    const jokers = filtered.filter(a => a.suit === 'joker')
-    if (jokers.length === 0 && year === 2026) {
-      const jokerPrompt = document.createElement('div')
-      jokerPrompt.className = 'col-span-full mt-8 text-center'
-      jokerPrompt.innerHTML = `
-        <div class="inline-block bg-white/90 px-8 py-6 rounded-2xl shadow-xl">
-          <div class="text-5xl mb-3">🃏</div>
-          <p class="font-script text-2xl text-gray-700">Don't forget to add your wild card adventures!</p>
-        </div>
-      `
-      deckEl.appendChild(jokerPrompt)
+      const nodes = await Promise.all(acts.map((act, index) => createDeckCard(act, {
+        isLocalDev,
+        supabase,
+        index,
+        monthLabel: label,
+        onEdit: async (id, updates) => {
+          if (isLocalDev) {
+            await localStorageDB.updateActivity(id, updates)
+          } else {
+            await supabase.from('activities').update(updates).eq('id', id)
+          }
+          await renderMonthWise()
+        },
+        onToggle: async () => {
+          await toggleUsage(act, isLocalDev, supabase)
+          celebrateIfNeeded(act)
+          await renderMonthWise()
+        },
+        getSuitMeta: (suit) => SUIT_META[suit] || SUIT_META.default,
+        fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev, supabase)
+      })))
+
+      nodes.forEach(n => grid.appendChild(n))
+      deckEl.appendChild(section)
     }
   }
 
-  switchToYear(upcomingYear)
-  loadYear(upcomingYear)
+  setYearActive(currentYear)
+  await renderMonthWise()
 }

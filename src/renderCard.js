@@ -1,48 +1,43 @@
 import { showCardEditor } from './cardEditor'
 import { renderCardView } from './views/cardView'
 
-function buildCtaHtml({ isUpcomingYear, isUsed }) {
-  if (isUpcomingYear) {
-    const gradient = isUsed ? 'from-green-400 to-green-500' : 'from-yellow-400 to-yellow-500'
-    const text = isUsed ? '✓ COMPLETED! 🎉' : '⚡ DOUBLE TAP TO MARK DONE'
+function buildCtaHtml({ isDone }) {
+  if (isDone) {
     return `
-      <div class="mt-3 bg-gradient-to-r ${gradient} text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
-        ${text}
+      <div class="mt-3 bg-gradient-to-r from-green-400 to-green-500 text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
+        ✓ COMPLETED! 🎉
       </div>
     `
   }
 
   return `
-    <div class="mt-3 bg-gradient-to-r from-pink-300 to-pink-400 text-center font-script text-lg py-2 text-white rounded-lg shadow-md">
-      Beautiful Memory 💕
+    <div class="mt-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-xs text-center font-bold py-2.5 text-white rounded-lg shadow-md">
+      ⚡ DOUBLE TAP TO MARK DONE
     </div>
   `
 }
 
 export async function createDeckCard(act, ctx) {
   const {
-    year,
-    pastYear,
-    upcomingYear,
     isLocalDev,
     supabase,
     index,
     onEdit,
     onToggle,
     getSuitMeta,
-    fetchImageUrl
+    fetchImageUrl,
+    monthLabel
   } = ctx
 
   const card = document.createElement('div')
-  card.className = `perspective h-80 cursor-pointer animate-slide-in card-container ${act.is_used ? 'opacity-60' : ''}`
+  card.className = `perspective h-80 cursor-pointer animate-slide-in card-container ${act.is_used ? '' : ''}`
   card.style.animationDelay = `${index * 0.05}s`
 
   const imgUrl = await fetchImageUrl(act)
   const suitMeta = getSuitMeta(act.suit)
-  const isFlipped = year === pastYear ? 'rotate-y-180' : ''
+  const isFlipped = act.is_used ? 'rotate-y-180' : ''
   const suitClass = `suit-${act.suit}`
-  const isUpcomingYear = year === upcomingYear
-  const ctaHtml = buildCtaHtml({ isUpcomingYear, isUsed: act.is_used })
+  const ctaHtml = buildCtaHtml({ isDone: act.is_used })
 
   card.innerHTML = renderCardView({
     act,
@@ -50,7 +45,8 @@ export async function createDeckCard(act, ctx) {
     suitMeta,
     isFlipped,
     suitClass,
-    ctaHtml
+    ctaHtml,
+    monthLabel
   })
 
   card.onclick = (e) => {
@@ -61,17 +57,16 @@ export async function createDeckCard(act, ctx) {
       })
       return
     }
+
     card.querySelector('.card-inner').classList.toggle('rotate-y-180')
   }
 
-  if (isUpcomingYear) {
-    card.ondblclick = async (e) => {
-      e.stopPropagation()
-      try {
-        if (onToggle) await onToggle()
-      } catch (err) {
-        alert(err.message || 'Failed to update card')
-      }
+  card.ondblclick = async (e) => {
+    e.stopPropagation()
+    try {
+      if (onToggle) await onToggle()
+    } catch (err) {
+      alert(err.message || 'Failed to update card')
     }
   }
 

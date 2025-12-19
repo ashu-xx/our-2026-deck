@@ -7,7 +7,7 @@ export function showCardEditor(card, supabase, isLocalDev, onSave) {
   modal.id = 'cardEditorModal'
   modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in'
 
-  const isEmpty = !card.title || card.title === `Week ${card.week_number} - ${card.suit}`
+  const isEmpty = !card.title
 
   modal.innerHTML = renderCardEditorView({ card, isEmpty })
 
@@ -52,11 +52,15 @@ export function showCardEditor(card, supabase, isLocalDev, onSave) {
         }
       }
 
+      const plannedDateInput = document.getElementById('editPlannedDate')
+      const planned_date = plannedDateInput?.value || null
+
       const updates = {
         title: document.getElementById('editTitle').value,
         description: document.getElementById('editDescription').value,
         suit: document.getElementById('editSuit').value,
-        image_path: imagePath
+        image_path: imagePath,
+        planned_date
       }
 
       if (onSave) {

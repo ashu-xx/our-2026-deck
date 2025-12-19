@@ -12,12 +12,15 @@ export function initializeYearCards(year) {
     const suitIndex = Math.floor((week - 1) / cardsPerSuit)
     const suit = suits[suitIndex] || suits[0]
 
+    const planned_date = new Date(year, 0, 1 + (week - 1) * 7).toISOString().slice(0, 10)
+
     cards.push({
-      title: `Week ${week}`,
+      title: `Planned for ${planned_date}`,
       description: '',
       suit,
       deck_year: year,
       week_number: week,
+      planned_date,
       image_path: null,
       is_used: false,
       created_at: new Date().toISOString()
@@ -32,6 +35,7 @@ export function initializeYearCards(year) {
       suit: 'joker',
       deck_year: year,
       week_number: 53,
+      planned_date: new Date(year, 11, 20).toISOString().slice(0, 10),
       image_path: null,
       is_used: false,
       created_at: new Date().toISOString()
@@ -42,6 +46,7 @@ export function initializeYearCards(year) {
       suit: 'joker',
       deck_year: year,
       week_number: 54,
+      planned_date: new Date(year, 11, 27).toISOString().slice(0, 10),
       image_path: null,
       is_used: false,
       created_at: new Date().toISOString()
@@ -80,6 +85,22 @@ export async function checkAndInitializeYear(year, supabase, isLocalDev) {
         }
       } else {
         await supabase.from('activities').insert(cardsToAdd)
+      }
+    }
+  }
+
+  // Backfill planned_date for existing cards that don't have it yet
+  const missingPlannedDate = existingCards.filter(c => !c.planned_date && c.week_number)
+  if (missingPlannedDate.length > 0) {
+    for (const c of missingPlannedDate) {
+      const planned_date = c.suit === 'joker'
+        ? new Date(year, 11, c.week_number === 53 ? 20 : 27).toISOString().slice(0, 10)
+        : new Date(year, 0, 1 + (c.week_number - 1) * 7).toISOString().slice(0, 10)
+
+      if (isLocalDev) {
+        await localStorageDB.updateActivity(c.id, { planned_date })
+      } else {
+        await supabase.from('activities').update({ planned_date }).eq('id', c.id)
       }
     }
   }

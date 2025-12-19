@@ -5,13 +5,24 @@ export function renderCardEditorView({ card, isEmpty }) {
         <div class="flex justify-between items-center">
           <div>
             <h2 class="text-2xl font-festive">${isEmpty ? 'Create' : 'Edit'} Card 🎴</h2>
-            <p class="text-sm text-white/80 mt-1">${card.deck_year} - Week ${card.week_number}</p>
+            <p class="text-sm text-white/80 mt-1">${card.deck_year}</p>
           </div>
           <button id="closeModal" class="text-white hover:text-gold transition text-2xl">&times;</button>
         </div>
       </div>
       
       <form id="editCardForm" class="p-6 space-y-5">
+        <div>
+          <label class="text-xs font-bold uppercase text-gray-700 block mb-2">Planned Date</label>
+          <input
+            type="date"
+            id="editPlannedDate"
+            value="${card.planned_date || ''}"
+            class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 outline-none"
+          >
+          <p class="text-xs text-gray-500 mt-1">This controls which month the card appears in, and ordering within the month.</p>
+        </div>
+
         <div>
           <label class="text-xs font-bold uppercase text-gray-700 block mb-2">Activity Title</label>
           <input
