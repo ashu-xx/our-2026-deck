@@ -1,4 +1,23 @@
+import { getLocalDevUsers } from '../appBackend'
+
 export function renderLoginView({ app, isLocalDev, onSubmit }) {
+  const localUsers = isLocalDev ? Object.values(getLocalDevUsers()) : []
+
+  const rowClasses = ['bg-blue-100', 'bg-green-100', 'bg-rose-100']
+
+  const localUsersHtml = localUsers.length
+    ? localUsers.map((u, i) => {
+      const rowClass = rowClasses[i % rowClasses.length]
+      const label = u.email.split('@')[0]
+      return `
+        <div class="flex justify-between items-center ${rowClass} px-2 py-1 rounded">
+          <span class="font-semibold">👤 ${escapeHtml(label)}:</span>
+          <span class="font-mono text-xs">${escapeHtml(u.email)} / ${escapeHtml(u.password)}</span>
+        </div>
+      `
+    }).join('')
+    : `<div class="text-xs text-yellow-900/80">Set <span class="font-mono">VITE_LOCAL_USERS</span> in <span class="font-mono">.env</span> like: <span class="font-mono">alice@example.com:alice123,bob@example.com:bob123</span></div>`
+
   app.innerHTML = `
     <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-800 via-green-700 to-green-900 relative overflow-hidden">
         <div class="fixed top-10 left-10 text-6xl animate-float opacity-30">🎄</div>
@@ -14,7 +33,7 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
               <p class="font-script text-xl text-gray-600 italic mt-2">A year of love and adventure</p>
               <div class="mt-4 flex justify-center gap-3 text-3xl">
                 <span class="animate-float">🎅</span>
-                <span class="animate-float-reverse">🌺</span>
+                <span class="animate-float-reverse">🌹</span>
                 <span class="animate-float">🎴</span>
               </div>
             </div>
@@ -25,14 +44,7 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
                 <div class="w-full">
                   <strong class="block mb-2">Local Dev Mode - Test Accounts</strong>
                   <div class="space-y-1">
-                    <div class="flex justify-between items-center bg-blue-100 px-2 py-1 rounded">
-                      <span class="font-semibold">👤 Alice:</span> 
-                      <span class="font-mono text-xs">alice@example.com / alice123</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-green-100 px-2 py-1 rounded">
-                      <span class="font-semibold">👤 Bob:</span> 
-                      <span class="font-mono text-xs">bob@example.com / bob123</span>
-                    </div>
+                    ${localUsersHtml}
                   </div>
                 </div>
               </div>
@@ -90,4 +102,13 @@ export function renderLoginView({ app, isLocalDev, onSubmit }) {
     const password = form.password.value
     onSubmit({ email, password })
   })
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
 }

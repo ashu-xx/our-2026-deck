@@ -80,6 +80,10 @@ function parseLocalUsersEnv() {
   }
 }
 
+export function getLocalDevUsers() {
+  return parseLocalUsersEnv()
+}
+
 /**
  * Backend abstraction:
  * - Local Dev: localStorage (including mock login)
