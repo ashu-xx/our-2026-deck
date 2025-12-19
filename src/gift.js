@@ -30,15 +30,26 @@ export async function renderGiftView(app, supabase) {
   let activities = []
 
   // Helpers: prefer planned_date only
+  function parseLocalDate(isoDate) {
+    if (!isoDate) return null
+    const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(isoDate)
+    if (!m) return null
+    const year = Number(m[1])
+    const month = Number(m[2]) - 1
+    const day = Number(m[3])
+    const d = new Date(year, month, day)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+
   function dateKeyOrDefault(act) {
-    const t = Date.parse(act.planned_date)
-    if (Number.isFinite(t)) return t
-    return Date.parse(`${act.deck_year}-12-01`)
+    const d = parseLocalDate(act.planned_date)
+    if (d) return d.getTime()
+    return new Date(act.deck_year, 11, 1).getTime()
   }
 
   function monthIndexOrDefault(act) {
-    const t = Date.parse(act.planned_date)
-    if (Number.isFinite(t)) return new Date(t).getMonth()
+    const d = parseLocalDate(act.planned_date)
+    if (d) return d.getMonth()
     return 11
   }
 
@@ -88,8 +99,7 @@ export async function renderGiftView(app, supabase) {
   let currentYear = upcomingYear
 
   function monthNameFromIso(iso) {
-    const t = Date.parse(iso)
-    const d = Number.isFinite(t) ? new Date(t) : new Date(currentYear, 11, 1)
+    const d = parseLocalDate(iso) || new Date(currentYear, 11, 1)
     return d.toLocaleString(undefined, { month: 'long' }).toUpperCase()
   }
 
@@ -104,7 +114,7 @@ export async function renderGiftView(app, supabase) {
 
     const monthBuckets = new Map()
     for (const act of filtered) {
-      const monthIndex = act.suit === 'joker' ? 11 : getMonthIndex(act)
+      const monthIndex = getMonthIndex(act)
       if (!monthBuckets.has(monthIndex)) monthBuckets.set(monthIndex, [])
       monthBuckets.get(monthIndex).push(act)
     }
@@ -120,7 +130,9 @@ export async function renderGiftView(app, supabase) {
       const grid = section.querySelector('[data-month-grid]')
 
       const acts = monthBuckets.get(monthIndex)
-      const label = monthNameFromIso(acts.find(a => a.planned_date)?.planned_date || `${currentYear}-12-01`)
+      const label = new Date(currentYear, monthIndex, 1)
+        .toLocaleString(undefined, { month: 'long' })
+        .toUpperCase()
 
       const nodes = await Promise.all(acts.map((act, index) => createDeckCard(act, {
         isLocalDev,

@@ -27,7 +27,7 @@ export function initializeYearCards(year) {
     })
   }
 
-  // Create 2 joker cards (week 53 and 54)
+  // Create 2 joker cards (default: one summer, one December)
   cards.push(
     {
       title: 'Joker 1',
@@ -35,7 +35,7 @@ export function initializeYearCards(year) {
       suit: 'joker',
       deck_year: year,
       week_number: 53,
-      planned_date: new Date(year, 11, 20).toISOString().slice(0, 10),
+      planned_date: new Date(year, 6, 5).toISOString().slice(0, 10),
       image_path: null,
       is_used: false,
       created_at: new Date().toISOString()
@@ -46,7 +46,7 @@ export function initializeYearCards(year) {
       suit: 'joker',
       deck_year: year,
       week_number: 54,
-      planned_date: new Date(year, 11, 27).toISOString().slice(0, 10),
+      planned_date: new Date(year, 11, 15).toISOString().slice(0, 10),
       image_path: null,
       is_used: false,
       created_at: new Date().toISOString()
@@ -94,7 +94,9 @@ export async function checkAndInitializeYear(year, supabase, isLocalDev) {
   if (missingPlannedDate.length > 0) {
     for (const c of missingPlannedDate) {
       const planned_date = c.suit === 'joker'
-        ? new Date(year, 11, c.week_number === 53 ? 20 : 27).toISOString().slice(0, 10)
+        ? (c.week_number === 53
+          ? new Date(year, 6, 5).toISOString().slice(0, 10)
+          : new Date(year, 11, 15).toISOString().slice(0, 10))
         : new Date(year, 0, 1 + (c.week_number - 1) * 7).toISOString().slice(0, 10)
 
       if (isLocalDev) {
