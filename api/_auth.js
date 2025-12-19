@@ -18,6 +18,17 @@ function normalizeEnvString(v) {
   return String(v ?? '').trim()
 }
 
+function parseAllowedEmails(envValue) {
+  const raw = normalizeEnvString(envValue)
+  if (!raw) return []
+
+  // Support either a single email or a comma-separated list.
+  return raw
+    .split(',')
+    .map(s => s.trim().toLowerCase())
+    .filter(Boolean)
+}
+
 function decodeBasicToken(token) {
   const raw = String(token || '').trim()
   if (!raw) return ''
@@ -49,11 +60,11 @@ function unauthorized(res) {
  * - Authorization: Basic base64(email:password)
  */
 export function requireBasicAuth(req, res) {
-  const expectedEmail = normalizeEnvString(process.env.APP_LOGIN_EMAIL)
+  const allowedEmails = parseAllowedEmails(process.env.APP_LOGIN_EMAIL)
   const expectedPassword = normalizeEnvString(process.env.APP_LOGIN_PASSWORD)
 
   // If not configured, fail closed.
-  if (!expectedEmail || !expectedPassword) {
+  if (!allowedEmails.length || !expectedPassword) {
     json(res, 500, { error: 'Server auth is not configured. Set APP_LOGIN_EMAIL and APP_LOGIN_PASSWORD.' })
     return false
   }
@@ -71,7 +82,8 @@ export function requireBasicAuth(req, res) {
   const password = idx >= 0 ? decoded.slice(idx + 1).trim() : ''
 
   // Email is lowercased in the UI; compare case-insensitively.
-  const emailOk = safeEqual(email.toLowerCase(), expectedEmail.toLowerCase())
+  const normalizedEmail = email.toLowerCase()
+  const emailOk = allowedEmails.some((e) => safeEqual(normalizedEmail, e))
   const passwordOk = safeEqual(password, expectedPassword)
 
   if (!emailOk || !passwordOk) {
