@@ -145,8 +145,18 @@ export async function renderGiftView(app) {
   const yearConfig = getYearConfig()
   const { pastYear, upcomingYear } = yearConfig
 
+  const userEmail = appBackend.getCurrentUserEmail(isLocalDev)
+
   // Landing screen first (no data fetch required)
-  app.innerHTML = renderLandingView({ pastYear, upcomingYear })
+  app.innerHTML = renderLandingView({ pastYear, upcomingYear, userEmail })
+
+  const logoutBtn = app.querySelector('#logoutBtn')
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      appBackend.logout(isLocalDev)
+      location.reload()
+    }
+  }
 
   // Proceed to load actual deck view when user clicks "Deal"
   const dealBtn = app.querySelector('#dealDeckBtn')

@@ -1,6 +1,10 @@
-export function renderLandingView({ pastYear, upcomingYear }) {
+import { renderTopBar } from './topBar'
+
+export function renderLandingView({ pastYear, upcomingYear, userEmail }) {
   return `
     <div class="min-h-screen bg-pattern relative overflow-hidden">
+      ${renderTopBar({ userEmail })}
+
       <div class="fixed top-24 left-10 text-6xl animate-float opacity-20">🦙</div>
       <div class="fixed top-32 right-20 text-5xl animate-float-reverse opacity-20">🌹</div>
       <div class="fixed bottom-20 left-20 text-5xl animate-float opacity-20">🎅</div>
@@ -8,7 +12,7 @@ export function renderLandingView({ pastYear, upcomingYear }) {
       <div class="fixed top-1/3 left-1/4 text-4xl animate-sparkle opacity-15">✨</div>
       <div class="fixed top-2/3 right-1/4 text-4xl animate-sparkle opacity-15">🎄</div>
 
-      <main class="pt-20 px-6 pb-20 relative z-10">
+      <main class="pt-8 px-6 pb-20 relative z-10">
         <div class="max-w-6xl mx-auto">
           <header class="text-center mb-10">
             <div class="text-7xl mb-3 animate-float">💝</div>

@@ -1,33 +1,9 @@
+import { renderTopBar } from './topBar'
+
 export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogout, onYearChange }) {
   app.innerHTML = `
     <div class="min-h-screen bg-pattern pb-20 relative overflow-hidden">
-      <nav class="fixed top-0 left-0 right-0 z-50 surface-glass-nav">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center h-16">
-            <div class="flex items-center space-x-3">
-              <span class="text-3xl animate-float">💝</span>
-              <div>
-                <h2 class="font-festive text-xl text-gold">Our 2026 Deck</h2>
-                <p class="text-white/70 text-xs font-script">Adventures Together</p>
-              </div>
-            </div>
-            <div class="flex items-center space-x-4">
-              <div class="hidden sm:flex items-center space-x-3 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div class="w-8 h-8 bg-linear-to-br from-yellow-400 to-gold rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                  ${userEmail.charAt(0).toUpperCase()}
-                </div>
-                <div class="flex flex-col">
-                  <span class="text-white text-sm font-medium">${userEmail.split('@')[0]}</span>
-                </div>
-              </div>
-              <button id="logoutBtn" class="btn btn-danger btn-pill hover:shadow-xl transform hover:scale-105 flex items-center space-x-2">
-                <span>🚪</span>
-                <span>Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      ${renderTopBar({ userEmail })}
 
       <div class="fixed top-24 left-10 text-6xl animate-float opacity-20">🦙</div>
       <div class="fixed top-32 right-20 text-5xl animate-float-reverse opacity-20">🌹</div>
