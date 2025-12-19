@@ -164,11 +164,19 @@
 
 /* Card flip animation enhancement */
 .card-inner {
-  transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.35s ease;
+  transform: translate3d(var(--tx, 0px), var(--ty, 0px), 0) rotate(var(--rot, 0deg)) rotateY(var(--flip, 0deg));
+  transform-style: preserve-3d;
 }
 
 .card-inner.flipped {
-  transform: rotateY(180deg);
+  --flip: 180deg;
+}
+
+.card-inner.dragging {
+  transition: none;
+  cursor: grabbing;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
 /* Joker special styling */
