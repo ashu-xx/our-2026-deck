@@ -45,7 +45,7 @@ export function renderCardView({
 
       <!-- Front (revealed activity) -->
       <div class="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-2xl bg-white border border-slate-200 flex flex-col">
-        <div class="relative h-44 overflow-hidden">
+        <div class="relative h-40 sm:h-44 overflow-hidden flex-shrink-0">
           <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-cover">
           <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
             ${symbol}
@@ -55,10 +55,10 @@ export function renderCardView({
           </button>
         </div>
 
-        <div class="p-4 flex-1 flex flex-col ${suitClass}">
+        <div class="p-3 sm:p-4 flex-1 flex flex-col ${suitClass} overflow-auto">
           <p class="text-[10px] uppercase tracking-[0.25em] text-slate-500 font-semibold">Weekend Activity</p>
-          <h3 class="font-bold text-lg leading-tight text-slate-900 mb-1">${act.title}</h3>
-          <p class="text-sm text-slate-700 leading-relaxed flex-1">${act.description || ''}</p>
+          <h3 class="font-bold text-base sm:text-lg leading-tight text-slate-900 mb-1">${act.title}</h3>
+          <p class="text-xs sm:text-sm text-slate-700 leading-relaxed flex-1">${act.description || ''}</p>
           ${ctaHtml}
         </div>
       </div>
