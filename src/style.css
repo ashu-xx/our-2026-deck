@@ -305,3 +305,115 @@ nav button:hover {
 .animate-checkmark {
   animation: checkmark 0.4s ease-out;
 }
+
+/* Dealing overlay styling (outside @layer for simplicity) */
+.dealing-overlay {
+  @apply fixed inset-0 z-100 bg-black/50 backdrop-blur-md flex items-center justify-center p-6;
+}
+
+.dealing-card {
+  @apply relative w-full max-w-[420px] p-6 border-2 border-white/20 rounded-[18px] bg-[#111827]/90 text-white overflow-hidden shadow-[0_25px_70px_rgba(0,0,0,0.45)];
+}
+
+.dealing-bg-circle {
+  @apply absolute w-[11rem] h-[11rem] rounded-full blur-[32px] opacity-85;
+}
+
+.dealing-bg-1 {
+  @apply top-[-4rem] right-[-4rem] bg-[linear-gradient(135deg,rgba(253,224,71,0.25),rgba(244,114,182,0.2),rgba(74,222,128,0.25))];
+}
+
+.dealing-bg-2 {
+  @apply bottom-[-4rem] left-[-4rem] bg-[linear-gradient(135deg,rgba(244,114,182,0.25),rgba(74,222,128,0.2),rgba(253,224,71,0.25))];
+}
+
+.dealing-header { @apply relative z-1 text-center mb-2; }
+.dealing-title { @apply font-extrabold text-xl mb-1; }
+.dealing-subtitle { @apply text-white/70 text-sm; }
+
+.dealing-stage { @apply relative h-[12.5rem] w-[13rem] mx-auto my-2; }
+
+.deal-card {
+  @apply absolute left-1/2 top-1/2 w-[92px] h-[134px] -translate-x-1/2 -translate-y-1/2 rounded-[18px] border-3 border-white/92 shadow-[0_26px_60px_rgba(0,0,0,0.45)] overflow-hidden;
+  background:
+    radial-gradient(120px 120px at 20% 20%, rgba(255, 255, 255, 0.18), transparent 60%),
+    linear-gradient(135deg, rgba(185, 28, 28, 0.96), rgba(225, 29, 72, 0.9), rgba(21, 128, 61, 0.9));
+  will-change: transform, opacity;
+}
+
+.deal-card::before {
+  content: '';
+  @apply absolute inset-[-40px] bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.35)_50%,transparent_70%)] translate-x-[-60%] rotate-[10deg] opacity-55;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+.deal-card::after {
+  content: attr(data-suit);
+  @apply absolute right-2 bottom-2 text-[22px] text-white/95;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-60%) rotate(10deg); }
+  100% { transform: translateX(60%) rotate(10deg); }
+}
+
+@keyframes dealMove1 {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); opacity: 0.0; filter: blur(0.5px); }
+  12% { opacity: 1; }
+  55% { transform: translate(calc(-50% - 78px), calc(-50% - 14px)) rotate(-12deg) scale(1.02); opacity: 1; filter: blur(0px); }
+  100% { transform: translate(calc(-50% - 78px), calc(-50% - 14px)) rotate(-12deg) scale(0.98); opacity: 0.62; }
+}
+
+@keyframes dealMove2 {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); opacity: 0.0; filter: blur(0.5px); }
+  12% { opacity: 1; }
+  55% { transform: translate(calc(-50% - 22px), calc(-50% - 40px)) rotate(8deg) scale(1.02); opacity: 1; filter: blur(0px); }
+  100% { transform: translate(calc(-50% - 22px), calc(-50% - 40px)) rotate(8deg) scale(0.98); opacity: 0.62; }
+}
+
+@keyframes dealMove3 {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); opacity: 0.0; filter: blur(0.5px); }
+  12% { opacity: 1; }
+  55% { transform: translate(calc(-50% + 34px), calc(-50% - 34px)) rotate(16deg) scale(1.02); opacity: 1; filter: blur(0px); }
+  100% { transform: translate(calc(-50% + 34px), calc(-50% - 34px)) rotate(16deg) scale(0.98); opacity: 0.62; }
+}
+
+@keyframes dealMove4 {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); opacity: 0.0; filter: blur(0.5px); }
+  12% { opacity: 1; }
+  55% { transform: translate(calc(-50% + 88px), calc(-50% - 4px)) rotate(24deg) scale(1.02); opacity: 1; filter: blur(0px); }
+  100% { transform: translate(calc(-50% + 88px), calc(-50% - 4px)) rotate(24deg) scale(0.98); opacity: 0.62; }
+}
+
+.deal-card-1 { animation: dealMove1 1.1s ease-in-out infinite; }
+.deal-card-2 { animation: dealMove2 1.1s ease-in-out infinite; animation-delay: 0.09s; }
+.deal-card-3 { animation: dealMove3 1.1s ease-in-out infinite; animation-delay: 0.18s; }
+.deal-card-4 { animation: dealMove4 1.1s ease-in-out infinite; animation-delay: 0.27s; }
+
+.spark {
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] text-white/75;
+  text-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+@keyframes sparkle {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(1.15); opacity: 0; }
+}
+
+.spark-1 { --sx: -80px; --sy: -70px; animation: sparkle 900ms ease-out infinite; }
+.spark-2 { --sx: 85px;  --sy: -66px; animation: sparkle 900ms ease-out infinite; animation-delay: 150ms; }
+.spark-3 { --sx: -92px; --sy: 56px;  animation: sparkle 900ms ease-out infinite; animation-delay: 300ms; }
+.spark-4 { --sx: 96px;  --sy: 62px;  animation: sparkle 900ms ease-out infinite; animation-delay: 450ms; }
+
+.dealing-footer {
+  @apply text-center text-white/85 text-[0.9rem];
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deal-card::before, .deal-card-1, .deal-card-2, .deal-card-3, .deal-card-4, .spark { animation: none; opacity: 1; }
+}

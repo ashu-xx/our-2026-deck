@@ -6,6 +6,7 @@ import { renderLandingView } from './views/landingView'
 import { checkAndInitializeYear, getYearConfig } from './cardInitializer'
 import { dataStore } from './dataStore'
 import { appBackend } from './appBackend'
+import { renderDealingOverlay } from './views/dealingOverlay'
 
 function parseLocalDate(isoDate) {
   if (!isoDate) return null
@@ -28,6 +29,15 @@ function monthIndexOrDefault(act) {
   const d = parseLocalDate(act.planned_date)
   if (d) return d.getMonth()
   return 11
+}
+
+function randomSuit() {
+  const suits = ['\u2665', '\u2666', '\u2663', '\u2660']
+  return suits[Math.floor(Math.random() * suits.length)]
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
@@ -162,5 +172,21 @@ export async function renderGiftView(app) {
   const dealBtn = app.querySelector('#dealDeckBtn')
   if (!dealBtn) return
 
-  dealBtn.onclick = () => runDealFlow({ app, isLocalDev, pastYear, upcomingYear })
+  dealBtn.onclick = async () => {
+    const overlay = document.createElement('div')
+    overlay.innerHTML = renderDealingOverlay()
+    document.body.appendChild(overlay.firstElementChild)
+
+    const minOverlayMs = 2000
+    const startedAt = Date.now()
+
+    try {
+      await runDealFlow({ app, isLocalDev, pastYear, upcomingYear })
+
+      const elapsed = Date.now() - startedAt
+      if (elapsed < minOverlayMs) await sleep(minOverlayMs - elapsed)
+    } finally {
+      document.querySelector('[data-dealing-overlay]')?.remove()
+    }
+  }
 }
