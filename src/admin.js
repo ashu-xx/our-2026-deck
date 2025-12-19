@@ -1,7 +1,6 @@
 import { renderGiftView } from './gift'
 
-export async function renderAdminDashboard(app, supabase) {
+export async function renderAdminDashboard(app) {
   // No admin-specific features - everyone is equal
-  await renderGiftView(app, supabase, false)
+  await renderGiftView(app)
 }
-

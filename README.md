@@ -16,12 +16,25 @@ A beautiful, interactive card deck web application celebrating 52 weeks of adven
 - 🎨 **Beautiful UI** - Festive, responsive design
 - ⚡ **Interactive** - Click to flip, double-tap to complete
 
-## 🔐 Login (Local Dev Mode)
+## 🔐 Login
 
-| User | Email | Password |
-|------|-------|----------|
-| **Alice** | alice@example.com | alice123 |
-| **Bob** | bob@example.com | bob123 |
+### Local development (localStorage)
+Set in `.env`:
+- `VITE_LOCAL_DEV_MODE=true`
+- `VITE_LOCAL_USERS=alice@example.com:alice123,bob@example.com:bob123`
+
+The app will show the login screen and validate against `VITE_LOCAL_USERS`, then store a local session in `localStorage`.
+
+### Production on Vercel (KV + Blob)
+Set in Vercel Project → Settings → Environment Variables:
+- `VITE_LOCAL_DEV_MODE=false`
+- `APP_LOGIN_EMAIL=...`
+- `APP_LOGIN_PASSWORD=...`
+
+The UI login stores a Basic-Auth token in the browser and all `/api/*` routes verify it against `APP_LOGIN_EMAIL` / `APP_LOGIN_PASSWORD`.
+
+> Important: `APP_LOGIN_EMAIL` / `APP_LOGIN_PASSWORD` are server-only (do **not** prefix with `VITE_`).
+
 
 ## 🚀 Quick Start
 
@@ -124,43 +137,37 @@ For truly unique, spontaneous, or surprise activities:
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ installed
-- A Supabase account (free tier works great!)
+- Node.js 18+
 
 ### Installation
 
-1. **Clone and install dependencies:**
+1. **Install dependencies:**
+
 ```bash
 npm install
 ```
 
-2. **Set up Supabase:**
-   - Create a new project at [supabase.com](https://supabase.com)
-   - Create the activities table (see schema below)
-   - Create a storage bucket called `activity-images`
-   - Set up authentication users
+2. **Configure environment variables**
 
-3. **Configure environment variables:**
-Create a `.env` file in the root directory:
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_ADMIN_EMAIL=admin@example.com
+Copy `.env.example` to `.env` and adjust values:
+
+```bash
+cp .env.example .env
 ```
 
-4. **For local development without Supabase:**
-Add this to your `.env`:
-```env
-VITE_LOCAL_DEV_MODE=true
-```
-Then use:
-- Admin: `admin@example.com` / `password123`
-- User: `user@example.com` / `password123`
+3. **Run the app**
 
-### Run the app
 ```bash
 npm run dev
 ```
+
+### Production setup on Vercel
+
+In Vercel Project → Settings → Environment Variables:
+- Set `VITE_LOCAL_DEV_MODE=false`
+- Set `APP_LOGIN_EMAIL` and `APP_LOGIN_PASSWORD`
+- Add Vercel KV + Blob to the project (Storage tab)
+
 
 ## 🗄️ Database Schema
 
@@ -302,9 +309,9 @@ The design incorporates:
 
 - **Frontend**: Vanilla JavaScript (ES6+)
 - **Styling**: Tailwind CSS with custom animations
-- **Backend**: Supabase (PostgreSQL + Storage + Auth)
+- **Backend**: Vercel Serverless Functions + Vercel KV + Vercel Blob
 - **Build Tool**: Vite
-- **Hosting**: Deploy anywhere (Vercel, Netlify, etc.)
+- **Hosting**: Vercel
 
 ## 📱 Deployment
 
@@ -338,4 +345,3 @@ This gift was created to celebrate all the wonderful moments you'll share togeth
 **Note**: This is a deeply personal gift. Customize the activities to match your unique relationship and interests. The categories are suggestions - make them your own!
 
 ✨ Happy adventuring! ✨
-

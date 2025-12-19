@@ -4,7 +4,6 @@ import { renderCardView } from './views/cardView'
 /**
  * @typedef {Object} DeckCardContext
  * @property {boolean} isLocalDev
- * @property {any} supabase
  * @property {number} index
  * @property {string} monthLabel
  * @property {(id: string, updates: any) => Promise<void>} onEdit
@@ -20,7 +19,6 @@ import { renderCardView } from './views/cardView'
 export async function createDeckCard(act, ctx) {
   const {
     isLocalDev,
-    supabase,
     index,
     onEdit,
     onToggle,
@@ -139,7 +137,7 @@ export async function createDeckCard(act, ctx) {
   card.addEventListener('click', (e) => {
     if (e.target.closest('.edit-card-btn')) {
       e.stopPropagation()
-      showCardEditor(act, supabase, isLocalDev, async (id, updates) => {
+      showCardEditor(act, isLocalDev, async (id, updates) => {
         if (onEdit) await onEdit(id, updates)
       })
     }

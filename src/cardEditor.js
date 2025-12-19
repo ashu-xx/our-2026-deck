@@ -1,8 +1,8 @@
 import { renderCardEditorView } from './views/cardEditorView'
-import { localStorageDB } from './localStorage'
+import { dataStore } from './dataStore'
 
 // Card Editor Modal Component
-export function showCardEditor(card, supabase, isLocalDev, onSave) {
+export function showCardEditor(card, isLocalDev, onSave) {
   const modal = document.createElement('div')
   modal.id = 'cardEditorModal'
   modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in'
@@ -28,28 +28,8 @@ export function showCardEditor(card, supabase, isLocalDev, onSave) {
 
     try {
       if (file) {
-        if (isLocalDev) {
-          const { data, error } = await localStorageDB.uploadImage(file)
-          if (error) {
-            alert(error.message)
-            submitBtn.disabled = false
-            submitBtn.innerHTML = '💾 Save Changes'
-            return
-          }
-          imagePath = data.path
-        } else {
-          const fileName = `${Date.now()}-${file.name}`
-          const { data, error } = await supabase.storage
-            .from('activity-images')
-            .upload(`uploads/${fileName}`, file)
-          if (error) {
-            alert(error.message)
-            submitBtn.disabled = false
-            submitBtn.innerHTML = '💾 Save Changes'
-            return
-          }
-          imagePath = data.path
-        }
+        const { image_path } = await dataStore.uploadImage(file, isLocalDev)
+        imagePath = image_path
       }
 
       const plannedDateInput = document.getElementById('editPlannedDate')

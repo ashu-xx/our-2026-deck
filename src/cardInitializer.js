@@ -1,4 +1,4 @@
-import { localStorageDB } from './localStorage'
+import { dataStore } from './dataStore'
 
 // Initialize cards for a year
 export function initializeYearCards(year) {
@@ -56,56 +56,43 @@ export function initializeYearCards(year) {
   return cards
 }
 
+function computePlannedDate(year, card) {
+  if (card.suit === 'joker') {
+    const d = card.week_number === 53 ? new Date(year, 6, 5) : new Date(year, 11, 15)
+    return d.toISOString().slice(0, 10)
+  }
+
+  return new Date(year, 0, 1 + (card.week_number - 1) * 7).toISOString().slice(0, 10)
+}
+
+async function ensureYearCards({ year, existingCards, isLocalDev }) {
+  if (existingCards.length >= 54) return
+
+  const newCards = initializeYearCards(year)
+  const existingWeeks = new Set(existingCards.map(c => c.week_number))
+  const cardsToAdd = newCards.filter(c => !existingWeeks.has(c.week_number))
+  if (cardsToAdd.length === 0) return
+
+  await dataStore.insertActivities(cardsToAdd, isLocalDev)
+}
+
+async function backfillPlannedDates({ year, cards, isLocalDev }) {
+  const missing = cards.filter(c => !c.planned_date && c.week_number)
+  if (missing.length === 0) return
+
+  for (const c of missing) {
+    const planned_date = computePlannedDate(year, c)
+    await dataStore.updateActivity(c.id, { planned_date }, isLocalDev)
+  }
+}
+
 // Check if year needs initialization
-export async function checkAndInitializeYear(year, supabase, isLocalDev) {
-  let existingCards
+export async function checkAndInitializeYear(year, isLocalDev) {
+  const allActivities = await dataStore.listActivities(isLocalDev)
+  const existingCards = allActivities.filter(a => a.deck_year === year)
 
-  if (isLocalDev) {
-    const allActivities = await localStorageDB.getActivities()
-    existingCards = allActivities.filter(a => a.deck_year === year)
-  } else {
-    const { data } = await supabase.from('activities')
-      .select('*')
-      .eq('deck_year', year)
-    existingCards = data || []
-  }
-
-  // If year has less than 54 cards, initialize missing ones
-  if (existingCards.length < 54) {
-    const newCards = initializeYearCards(year)
-
-    // Filter out weeks that already exist
-    const existingWeeks = new Set(existingCards.map(c => c.week_number))
-    const cardsToAdd = newCards.filter(c => !existingWeeks.has(c.week_number))
-
-    if (cardsToAdd.length > 0) {
-      if (isLocalDev) {
-        for (const card of cardsToAdd) {
-          await localStorageDB.insertActivity(card)
-        }
-      } else {
-        await supabase.from('activities').insert(cardsToAdd)
-      }
-    }
-  }
-
-  // Backfill planned_date for existing cards that don't have it yet
-  const missingPlannedDate = existingCards.filter(c => !c.planned_date && c.week_number)
-  if (missingPlannedDate.length > 0) {
-    for (const c of missingPlannedDate) {
-      const planned_date = c.suit === 'joker'
-        ? (c.week_number === 53
-          ? new Date(year, 6, 5).toISOString().slice(0, 10)
-          : new Date(year, 11, 15).toISOString().slice(0, 10))
-        : new Date(year, 0, 1 + (c.week_number - 1) * 7).toISOString().slice(0, 10)
-
-      if (isLocalDev) {
-        await localStorageDB.updateActivity(c.id, { planned_date })
-      } else {
-        await supabase.from('activities').update({ planned_date }).eq('id', c.id)
-      }
-    }
-  }
+  await ensureYearCards({ year, existingCards, isLocalDev })
+  await backfillPlannedDates({ year, cards: existingCards, isLocalDev })
 }
 
 // Get year configuration

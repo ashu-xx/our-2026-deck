@@ -1,10 +1,11 @@
-import { localStorageDB } from './localStorage'
-import { celebrateIfNeeded, fetchImageUrl, SUIT_META, toggleUsage } from './cardUtils'
+import { celebrateIfNeeded, fetchImageUrl, toggleUsage } from './cardUtils'
 import { createDeckCard } from './renderCard'
 import { renderGiftShell } from './views/giftShell'
 import { renderMonthView } from './views/monthView'
 import { renderLandingView } from './views/landingView'
 import { checkAndInitializeYear, getYearConfig } from './cardInitializer'
+import { dataStore } from './dataStore'
+import { appBackend } from './appBackend'
 
 function parseLocalDate(isoDate) {
   if (!isoDate) return null
@@ -29,28 +30,16 @@ function monthIndexOrDefault(act) {
   return 11
 }
 
-async function runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear }) {
-  await checkAndInitializeYear(pastYear, supabase, isLocalDev)
-  await checkAndInitializeYear(upcomingYear, supabase, isLocalDev)
+async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
+  await checkAndInitializeYear(pastYear, isLocalDev)
+  await checkAndInitializeYear(upcomingYear, isLocalDev)
 
-  let userEmail
-  if (isLocalDev) {
-    const localUser = JSON.parse(localStorage.getItem('localDevUser'))
-    userEmail = localUser?.email || 'Guest'
-  } else {
-    const { data: { user } } = await supabase.auth.getUser()
-    userEmail = user?.email || 'Guest'
-  }
+  const userEmail = appBackend.getCurrentUserEmail(isLocalDev)
 
   let activities = []
 
   async function refreshActivities() {
-    if (isLocalDev) {
-      activities = await localStorageDB.getActivities()
-    } else {
-      const { data } = await supabase.from('activities').select('*')
-      activities = data || []
-    }
+    activities = await dataStore.listActivities(isLocalDev)
 
     activities = activities.map(a => ({
       ...a,
@@ -70,12 +59,8 @@ async function runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear }
     upcomingYear,
     userEmail,
     onLogout: () => {
-      if (isLocalDev) {
-        localStorage.removeItem('localDevUser')
-        location.reload()
-      } else {
-        supabase.auth.signOut().then(() => location.reload())
-      }
+      appBackend.logout(isLocalDev)
+      location.reload()
     },
     onYearChange: async (nextYear) => {
       currentYear = nextYear
@@ -117,24 +102,19 @@ async function runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear }
       const nodes = await Promise.all(acts.map((act, index) => {
         const cardCtx = {
           isLocalDev,
-          supabase,
           index,
           monthLabel: label,
           onEdit: async (id, updates) => {
-            if (isLocalDev) {
-              await localStorageDB.updateActivity(id, updates)
-            } else {
-              await supabase.from('activities').update(updates).eq('id', id)
-            }
+            await dataStore.updateActivity(id, updates, isLocalDev)
             await renderMonthWise()
           },
           onToggle: async () => {
-            await toggleUsage(act, isLocalDev, supabase)
+            await toggleUsage(act, isLocalDev)
             celebrateIfNeeded(act)
             await renderMonthWise()
           },
           getSuitMeta: (suit) => SUIT_META[suit] || SUIT_META.default,
-          fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev, supabase)
+          fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
         }
 
         return createDeckCard(act, cardCtx)
@@ -149,12 +129,8 @@ async function runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear }
   await renderMonthWise()
 }
 
-export async function renderGiftView(app, supabase) {
+export async function renderGiftView(app) {
   const isLocalDev = import.meta.env.VITE_LOCAL_DEV_MODE === 'true'
-  if (!isLocalDev && !supabase) {
-    app.innerHTML = '<div class="p-8 text-center text-white">Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.</div>'
-    return
-  }
 
   const yearConfig = getYearConfig()
   const { pastYear, upcomingYear } = yearConfig
@@ -166,5 +142,5 @@ export async function renderGiftView(app, supabase) {
   const dealBtn = app.querySelector('#dealDeckBtn')
   if (!dealBtn) return
 
-  dealBtn.onclick = () => runDealFlow({ app, supabase, isLocalDev, pastYear, upcomingYear })
+  dealBtn.onclick = () => runDealFlow({ app, isLocalDev, pastYear, upcomingYear })
 }
