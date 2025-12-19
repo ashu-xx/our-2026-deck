@@ -57,13 +57,14 @@ export function renderCardEditorView({ card, isEmpty }) {
 
         <div class="p-5 border-2 border-dashed border-yellow-400 rounded-lg bg-yellow-50">
           <label class="block text-sm font-bold mb-2 text-gray-700">📸 Activity Image</label>
-          ${card.image_path ? `<div class="mb-3 text-xs text-green-600">✓ Current image will be replaced if you upload a new one</div>` : ''}
+          ${card.image_path ? `<div class="mb-2 text-xs text-green-600">Current image will stay unless you upload a new one</div>` : ''}
           <input
             type="file"
             id="editImageFile"
             accept="image/*"
             class="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-gray-700 hover:file:bg-yellow-500 file:cursor-pointer"
           >
+          <div id="editImageStatus" class="mt-2 text-xs text-gray-700"></div>
         </div>
 
         <div class="flex gap-3 pt-4">

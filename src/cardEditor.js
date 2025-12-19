@@ -10,26 +10,74 @@ export function showCardEditor(card, isLocalDev, onSave) {
   const isEmpty = !card.title
 
   modal.innerHTML = renderCardEditorView({ card, isEmpty })
-
   document.body.appendChild(modal)
+
+  const submitBtn = modal.querySelector('button[type="submit"]')
+  let pendingImagePath = card.image_path
+  let isUploading = false
 
   // Event handlers
   document.getElementById('closeModal').onclick = () => modal.remove()
   document.getElementById('cancelEdit').onclick = () => modal.remove()
 
+  const fileInput = document.getElementById('editImageFile')
+  const fileStatus = document.getElementById('editImageStatus')
+
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0]
+    if (!file) return
+    try {
+      isUploading = true
+      if (submitBtn) {
+        submitBtn.disabled = true
+        submitBtn.innerHTML = 'Uploading…'
+      }
+      fileStatus.textContent = 'Uploading…'
+      fileStatus.classList.remove('text-green-600', 'text-red-600')
+      fileStatus.classList.add('text-gray-700')
+
+      const { image_path } = await dataStore.uploadImage(file, isLocalDev)
+      pendingImagePath = image_path
+
+      isUploading = false
+      fileStatus.textContent = 'Uploaded'
+      fileStatus.classList.remove('text-gray-700', 'text-red-600')
+      fileStatus.classList.add('text-green-600')
+      if (submitBtn) {
+        submitBtn.disabled = false
+        submitBtn.innerHTML = '💾 Save Changes'
+      }
+    } catch (err) {
+      isUploading = false
+      fileStatus.textContent = err.message || 'Upload failed'
+      fileStatus.classList.remove('text-gray-700', 'text-green-600')
+      fileStatus.classList.add('text-red-600')
+      pendingImagePath = card.image_path
+      if (submitBtn) {
+        submitBtn.disabled = false
+        submitBtn.innerHTML = '💾 Save Changes'
+      }
+    }
+  }
+
   document.getElementById('editCardForm').onsubmit = async (e) => {
     e.preventDefault()
+    if (isUploading) {
+      fileStatus.textContent = 'Please wait: upload in progress…'
+      fileStatus.classList.remove('text-green-600')
+      fileStatus.classList.add('text-gray-700')
+      return
+    }
     const submitBtn = e.target.querySelector('button[type="submit"]')
     submitBtn.disabled = true
     submitBtn.innerHTML = 'Saving... ⏳'
 
-    const file = document.getElementById('editImageFile').files[0]
-    let imagePath = card.image_path
+    const file = fileInput.files[0]
 
     try {
-      if (file) {
+      if (file && !pendingImagePath) {
         const { image_path } = await dataStore.uploadImage(file, isLocalDev)
-        imagePath = image_path
+        pendingImagePath = image_path
       }
 
       const plannedDateInput = document.getElementById('editPlannedDate')
@@ -43,9 +91,7 @@ export function showCardEditor(card, isLocalDev, onSave) {
         updated_at: new Date().toISOString()
       }
 
-      if (file) {
-        updates.image_path = imagePath
-      }
+      if (pendingImagePath) updates.image_path = pendingImagePath
 
       if (onSave) {
         await onSave(card.id, updates)
