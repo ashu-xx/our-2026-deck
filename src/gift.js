@@ -1,4 +1,4 @@
-import { celebrateIfNeeded, fetchImageUrl, getSuitMeta, toggleUsage } from './cardUtils'
+import { fetchImageUrl, getSuitMeta } from './cardUtils'
 import { createDeckCard } from './renderCard'
 import { renderGiftShell } from './views/giftShell'
 import { renderPileView } from './views/pileView'
@@ -44,8 +44,6 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
       ...a,
       planned_date: a.planned_date || `${a.deck_year}-12-01`
     }))
-
-    activities = activities.map(a => (a.deck_year === pastYear ? { ...a, is_used: true } : a))
 
     activities.sort((a, b) => dateKeyOrDefault(a) - dateKeyOrDefault(b))
   }
@@ -140,19 +138,7 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
         isLocalDev,
         index: 0,
         label: pile.suitMeta.label,
-        // Main experience is view-only (no editing).
         showEdit: false,
-        viewOnly: true,
-        onEdit: async (id, updates) => {
-          const updatedActivity = { ...currentCard, ...updates, id, updated_at: new Date().toISOString() }
-          await dataStore.updateActivity(updatedActivity, isLocalDev)
-          await renderPiles()
-        },
-        onToggle: async () => {
-          await toggleUsage(currentCard, isLocalDev)
-          celebrateIfNeeded(currentCard)
-          await renderPiles()
-        },
         getSuitMeta,
         fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
       })

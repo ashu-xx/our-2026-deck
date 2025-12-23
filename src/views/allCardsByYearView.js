@@ -1,4 +1,4 @@
-import { celebrateIfNeeded, fetchImageUrl, getSuitMeta, toggleUsage } from '../cardUtils'
+import { fetchImageUrl, getSuitMeta } from '../cardUtils'
 import { createDeckCard } from '../renderCard'
 import { dataStore } from '../dataStore'
 
@@ -43,7 +43,6 @@ function emptyCardTemplate({ year, suit }) {
     description: '',
     suit,
     image_path: null,
-    is_used: false,
     created_at: now,
     updated_at: now
   }
@@ -94,27 +93,16 @@ async function renderSuitSection({ container, year, suit, cards, isLocalDev }) {
       index,
       label: String(year),
       showEdit: true,
-      viewOnly: false,
       onEdit: async (id, updates) => {
         const updatedActivity = { ...act, ...updates, id, updated_at: new Date().toISOString() }
         await dataStore.updateActivity(updatedActivity, isLocalDev)
-        await renderAllCardsByYearView({ app: container.closest('#app') || container, year, isLocalDev })
-      },
-      onToggle: async () => {
-        await toggleUsage(act, isLocalDev)
-        celebrateIfNeeded(act)
         await renderAllCardsByYearView({ app: container.closest('#app') || container, year, isLocalDev })
       },
       getSuitMeta,
       fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
     })
 
-    // Force "revealed" (front) view visually, but don't touch is_used/completed state.
-    const inner = node.querySelector('.card-inner')
-    if (inner) {
-      inner.classList.add('flipped')
-      inner.style.setProperty('--flip', '180deg')
-    }
+    // Cards are now always rendered revealed by default.
 
     // Add remove button to the card container.
     const removeBtn = document.createElement('button')

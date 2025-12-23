@@ -73,8 +73,8 @@ export function renderCardView({
           <div class="text-6xl drop-shadow">${displaySymbol}</div>
           <div class="mt-2 text-3xl">${displayEmoji}</div>
           ${showPillLabel ? `<div class="mt-4 px-4 py-2 bg-white/10 rounded-full backdrop-blur text-xs font-bold tracking-[0.3em] uppercase">${label}</div>` : ''}
-          <div class="mt-2 text-[9px] text-white/90 font-bold text-center max-w-[70%] leading-tight break-words uppercase tracking-wider">${displayLabel}</div>
-          <div class="mt-6 text-[11px] text-white/70">Tap to reveal • Swipe to skip</div>
+          <div class="mt-2 text-[9px] text-white/90 font-bold text-center max-w-[70%] leading-tight wrap-break-word uppercase tracking-wider">${displayLabel}</div>
+          <div class="mt-6 text-[11px] text-white/70"></div>
           ${editBtnBack}
         </div>
       </div>
@@ -82,7 +82,7 @@ export function renderCardView({
       <!-- Front (revealed activity) -->
       <div class="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-2xl bg-white border border-slate-200 flex flex-col">
         <div class="relative h-56 sm:h-64 overflow-hidden shrink-0">
-          <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-cover">
+          <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-contain bg-black/5">
           <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
             ${displaySymbol}
           </div>

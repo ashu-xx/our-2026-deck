@@ -55,5 +55,3 @@ export function renderPileView({ piles }) {
     </div>
   `
 }
-
-// NOTE: Completed-cards view intentionally removed (not needed for the circular dealing experience).

@@ -32,7 +32,6 @@ export async function showCardLargeModal({ act, isLocalDev, label = '' }) {
           ${label ? `<div class="card-modal-label">${escapeHtml(label)}</div>` : ''}
           <h2 class="card-modal-title">${escapeHtml(act.title || '')}</h2>
           ${act.description ? `<p class="card-modal-desc">${escapeHtml(act.description)}</p>` : ''}
-          ${act.is_used ? `<div class="card-modal-completed">✓ Completed</div>` : ''}
         </div>
       </div>
     </div>

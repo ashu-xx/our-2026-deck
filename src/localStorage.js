@@ -19,7 +19,6 @@ function initializeSampleData() {
         deck_year: nowYear + 1,
         planned_date: `${nowYear + 1}-01-03`,
         image_path: null,
-        is_used: false,
         created_at: new Date().toISOString()
       },
       {
@@ -30,7 +29,6 @@ function initializeSampleData() {
         deck_year: nowYear + 1,
         planned_date: `${nowYear + 1}-01-10`,
         image_path: null,
-        is_used: false,
         created_at: new Date().toISOString()
       },
       {
@@ -41,11 +39,10 @@ function initializeSampleData() {
         deck_year: nowYear + 1,
         planned_date: `${nowYear + 1}-01-17`,
         image_path: null,
-        is_used: false,
         created_at: new Date().toISOString()
       },
 
-      // Past year sample (shown as "memories")
+      // Past year sample
       {
         id: 'sample-past-1',
         title: 'Our First Memory Card',
@@ -54,7 +51,6 @@ function initializeSampleData() {
         deck_year: nowYear,
         planned_date: `${nowYear}-01-06`,
         image_path: null,
-        is_used: true,
         created_at: new Date().toISOString()
       },
       {
@@ -65,7 +61,6 @@ function initializeSampleData() {
         deck_year: nowYear,
         planned_date: `${nowYear}-01-13`,
         image_path: null,
-        is_used: true,
         created_at: new Date().toISOString()
       }
     ]
@@ -89,8 +84,7 @@ export const localStorageDB = {
       ...activity,
       // Preserve provided IDs (used by year initialization) so future edits can update in-place.
       id: activity?.id || `activity-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      created_at: activity?.created_at || new Date().toISOString(),
-      is_used: typeof activity?.is_used === 'boolean' ? activity.is_used : false
+      created_at: activity?.created_at || new Date().toISOString()
     }
     activities.push(newActivity)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(activities))

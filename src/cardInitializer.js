@@ -32,7 +32,6 @@ export function initializeYearCards(year) {
       deck_year: year,
       planned_date,
       image_path: null,
-      is_used: false,
       created_at: now,
       updated_at: now
     })
@@ -52,7 +51,6 @@ export function initializeYearCards(year) {
       deck_year: year,
       planned_date: isoDateForWeek(year, randomWeek1),
       image_path: null,
-      is_used: false,
       created_at: now,
       updated_at: now
     },
@@ -64,7 +62,6 @@ export function initializeYearCards(year) {
       deck_year: year,
       planned_date: isoDateForWeek(year, randomWeek2),
       image_path: null,
-      is_used: false,
       created_at: now,
       updated_at: now
     }
