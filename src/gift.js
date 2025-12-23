@@ -139,7 +139,10 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
       const cardNode = await createDeckCard(currentCard, {
         isLocalDev,
         index: 0,
-        monthLabel: pile.suitMeta.label,
+        label: pile.suitMeta.label,
+        // Main experience is view-only (no editing).
+        showEdit: false,
+        viewOnly: true,
         onEdit: async (id, updates) => {
           const updatedActivity = { ...currentCard, ...updates, id, updated_at: new Date().toISOString() }
           await dataStore.updateActivity(updatedActivity, isLocalDev)

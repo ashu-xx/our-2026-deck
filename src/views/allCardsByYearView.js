@@ -60,7 +60,9 @@ export async function renderAllCardsByYearView({ app, year, isLocalDev }) {
     const node = await createDeckCard(act, {
       isLocalDev,
       index,
-      monthLabel: String(year),
+      label: String(year),
+      showEdit: true,
+      viewOnly: false,
       onEdit: async (id, updates) => {
         const updatedActivity = { ...act, ...updates, id, updated_at: new Date().toISOString() }
         await dataStore.updateActivity(updatedActivity, isLocalDev)

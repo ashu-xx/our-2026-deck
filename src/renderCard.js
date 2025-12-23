@@ -5,11 +5,13 @@ import { renderCardView } from './views/cardView'
  * @typedef {Object} DeckCardContext
  * @property {boolean} isLocalDev
  * @property {number} index
- * @property {string} monthLabel
- * @property {(id: string, updates: any) => Promise<void>} onEdit
- * @property {() => Promise<void>} onToggle
+ * @property {string} label
+ * @property {(id: string, updates: any) => Promise<void>} [onEdit]
+ * @property {() => Promise<void>} [onToggle]
  * @property {(suit: string) => any} getSuitMeta
  * @property {(activity: any) => Promise<string>} fetchImageUrl
+ * @property {boolean} [showEdit]
+ * @property {boolean} [viewOnly]
  */
 
 /**
@@ -24,7 +26,9 @@ export async function createDeckCard(act, ctx) {
     onToggle,
     getSuitMeta,
     fetchImageUrl,
-    monthLabel
+    label,
+    showEdit = false,
+    viewOnly = false
   } = ctx
 
   const card = document.createElement('div')
@@ -35,7 +39,13 @@ export async function createDeckCard(act, ctx) {
   const suitMeta = getSuitMeta(act.suit)
   const isFlipped = act.is_used ? 'flipped' : ''
   const suitClass = `suit-${act.suit}`
-  const ctaHtml = buildCtaHtml({ isDone: act.is_used })
+
+  // In view-only mode, keep the card focused for viewing (no edit UI),
+  // but still allow marking complete via swipe/double-click.
+  // We still show a "Completed" badge when the card is done.
+  const ctaHtml = viewOnly
+    ? (act.is_used ? buildCtaHtml({ isDone: true }) : '')
+    : buildCtaHtml({ isDone: act.is_used })
 
   card.innerHTML = renderCardView({
     act,
@@ -44,7 +54,8 @@ export async function createDeckCard(act, ctx) {
     isFlipped,
     suitClass,
     ctaHtml,
-    monthLabel
+    label,
+    showEdit
   })
 
   const inner = card.querySelector('.card-inner')
@@ -79,6 +90,8 @@ export async function createDeckCard(act, ctx) {
     setTransform()
   })
 
+  // Allow swipe + dblclick toggling as long as onToggle exists.
+  // (Edit remains disabled by showEdit=false.)
   inner.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.edit-card-btn')) return
     dragging = true
@@ -97,19 +110,35 @@ export async function createDeckCard(act, ctx) {
 
   inner.addEventListener('pointerup', async (e) => {
     if (!inner.hasPointerCapture(e.pointerId)) return
+
+    // Always release capture first.
     inner.releasePointerCapture(e.pointerId)
     dragging = false
+
     const dist = Math.hypot(currentX, currentY)
     const threshold = 120
 
     if (dist > threshold) {
       const direction = Math.sign(currentX || 1)
+
+      // Animate card off-screen.
       inner.style.transition = 'transform 220ms ease-out'
       inner.style.setProperty('--tx', `${direction * 600}px`)
       inner.style.setProperty('--rot', `${direction * 28}deg`)
+
+      // After the animation, always clean up visual state so it can't get stuck
+      // (even if the re-render is slow or onToggle errors).
       setTimeout(async () => {
-        if (onToggle) await onToggle()
+        try {
+          if (onToggle) await onToggle()
+        } finally {
+          // Ensure local visual state is reset.
+          inner.classList.remove('dragging')
+          inner.style.transition = ''
+          resetTransform()
+        }
       }, 220)
+
       return
     }
 
@@ -120,8 +149,26 @@ export async function createDeckCard(act, ctx) {
     }, 220)
   })
 
-  inner.addEventListener('pointercancel', () => {
+  inner.addEventListener('pointercancel', (e) => {
+    // If we still have capture for this pointer, release it.
+    try {
+      if (e?.pointerId != null && inner.hasPointerCapture(e.pointerId)) {
+        inner.releasePointerCapture(e.pointerId)
+      }
+    } catch {
+      // ignore
+    }
     dragging = false
+    inner.classList.remove('dragging')
+    inner.style.transition = ''
+    resetTransform()
+  })
+
+  inner.addEventListener('lostpointercapture', () => {
+    // Safety net: if capture is lost mid-drag, reset.
+    dragging = false
+    inner.classList.remove('dragging')
+    inner.style.transition = ''
     resetTransform()
   })
 
@@ -135,6 +182,7 @@ export async function createDeckCard(act, ctx) {
   })
 
   card.addEventListener('click', (e) => {
+    if (!showEdit) return
     if (e.target.closest('.edit-card-btn')) {
       e.stopPropagation()
       showCardEditor(act, isLocalDev, async (id, updates) => {
