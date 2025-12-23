@@ -482,3 +482,32 @@ nav button:hover {
 @media (prefers-reduced-motion: reduce) {
   .deal-card::before, .deal-card-1, .deal-card-2, .deal-card-3, .deal-card-4, .spark { animation: none; opacity: 1; }
 }
+
+/* Pile-based card layout */
+.pile-container {
+  @apply relative;
+}
+
+.card-pile-stack {
+  pointer-events: none;
+}
+
+@keyframes dealFromPile {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-30px) scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+[data-pile-cards] .card-container {
+  animation: dealFromPile 0.6s ease-out;
+}
+

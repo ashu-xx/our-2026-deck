@@ -5,7 +5,6 @@ export const SUIT_META = {
   diamonds: { symbol: '♦️', emoji: '🗺️', label: 'Adventures & Exploration' },
   clubs: { symbol: '♣️', emoji: '🦙', label: 'Nature & Outdoors' },
   spades: { symbol: '♠️', emoji: '🏠', label: 'Cozy & Creative' },
-  joker: { symbol: '🃏', emoji: '🌟', label: 'Wild Card' },
   default: { symbol: '✨', emoji: '✨', label: 'Special' }
 }
 

@@ -15,7 +15,8 @@ export function renderGiftShell({ app, pastYear, upcomingYear, userEmail, onLogo
       <header class="pt-24 p-10 text-center relative z-10">
         <div class="mb-4 text-6xl animate-float">💝</div>
         <h1 class="font-festive text-6xl text-gold mb-2 drop-shadow-2xl">Our Adventures Together</h1>
-        <p class="font-script text-2xl text-white/90 mb-6">A year of dates, surprises, and memories ✨</p>
+        <p class="font-script text-2xl text-white/90 mb-2">Four piles, one card at a time ✨</p>
+        <p class="text-white/70 text-sm mb-6">Press "Deal" to reveal the next 4 cards from each pile</p>
 
         <div class="flex justify-center bg-white/20 p-1.5 rounded-full w-fit mx-auto backdrop-blur-md shadow-2xl border-2 border-white/30">
           <button id="btnPast" class="tab-pill">${pastYear} Memories</button>

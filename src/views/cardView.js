@@ -9,6 +9,12 @@ export function renderCardView({
 }) {
   const { symbol, emoji, label } = suitMeta
 
+  // Check if this is a joker card
+  const isJoker = act.title?.toLowerCase().includes('joker')
+  const displaySymbol = isJoker ? '🃏' : symbol
+  const displayEmoji = isJoker ? '🌟' : emoji
+  const displayLabel = isJoker ? 'Wild Card!' : label
+
   const cacheBuster = act.updated_at || act.id || ''
 
   // Don't append query params to blob: URLs (they're already unique per object URL).
@@ -32,10 +38,10 @@ export function renderCardView({
         <div class="absolute inset-2 rounded-2xl border-2 border-white/30"></div>
         <div class="absolute inset-6 rounded-xl border border-white/15"></div>
         <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
-          <div class="text-6xl drop-shadow">${symbol}</div>
-          <div class="mt-2 text-3xl">${emoji}</div>
+          <div class="text-6xl drop-shadow">${displaySymbol}</div>
+          <div class="mt-2 text-3xl">${displayEmoji}</div>
           <div class="mt-4 px-4 py-2 bg-white/10 rounded-full backdrop-blur text-xs font-bold tracking-[0.3em] uppercase">${monthLabel}</div>
-          <div class="mt-2 text-[11px] text-white/80 font-semibold">${label}</div>
+          <div class="mt-2 text-[11px] text-white/80 font-semibold">${displayLabel}</div>
           <div class="mt-6 text-[11px] text-white/70">Tap to reveal • Swipe to skip</div>
           <button class="edit-card-btn mt-4 px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-xs font-bold rounded-full transition-all backdrop-blur">
             ✏️ Edit
@@ -48,7 +54,7 @@ export function renderCardView({
         <div class="relative h-56 sm:h-64 overflow-hidden flex-shrink-0">
           <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-cover">
           <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
-            ${symbol}
+            ${displaySymbol}
           </div>
           <button class="edit-card-btn absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-md">
             ✏️ Edit

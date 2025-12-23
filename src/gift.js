@@ -1,7 +1,7 @@
 import { celebrateIfNeeded, fetchImageUrl, getSuitMeta, toggleUsage } from './cardUtils'
 import { createDeckCard } from './renderCard'
 import { renderGiftShell } from './views/giftShell'
-import { renderMonthView } from './views/monthView'
+import { renderPileView } from './views/pileView'
 import { renderLandingView } from './views/landingView'
 import { checkAndInitializeYear, getYearConfig } from './cardInitializer'
 import { dataStore } from './dataStore'
@@ -23,17 +23,6 @@ function dateKeyOrDefault(act) {
   const d = parseLocalDate(act.planned_date)
   if (d) return d.getTime()
   return new Date(act.deck_year, 11, 1).getTime()
-}
-
-function monthIndexOrDefault(act) {
-  const d = parseLocalDate(act.planned_date)
-  if (d) return d.getMonth()
-  return 11
-}
-
-function randomSuit() {
-  const suits = ['\u2665', '\u2666', '\u2663', '\u2660']
-  return suits[Math.floor(Math.random() * suits.length)]
 }
 
 function sleep(ms) {
@@ -75,13 +64,19 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
     onYearChange: async (nextYear) => {
       currentYear = nextYear
       setYearActive(currentYear)
-      await renderMonthWise()
+      await renderPiles()
     }
   })
 
   let currentYear = upcomingYear
 
-  async function renderMonthWise() {
+  /**
+   * How many cards have been *dealt* from each suit (monotonic counter).
+   * We convert this to a current index via modulo to create a circular loop.
+   */
+  let dealtCardCounts = {} // { [suit]: number }
+
+  async function renderPiles() {
     await refreshActivities()
 
     const filtered = activities.filter(a => a.deck_year === currentYear)
@@ -96,59 +91,95 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
       return
     }
 
-    const monthBuckets = new Map()
+    const suits = ['hearts', 'diamonds', 'clubs', 'spades']
+
+    const suitBuckets = Object.fromEntries(suits.map(s => [s, []]))
     for (const act of filtered) {
-      const monthIndex = monthIndexOrDefault(act)
-      if (!monthBuckets.has(monthIndex)) monthBuckets.set(monthIndex, [])
-      monthBuckets.get(monthIndex).push(act)
+      if (suitBuckets[act.suit]) suitBuckets[act.suit].push(act)
+    }
+    for (const suit of suits) {
+      suitBuckets[suit].sort((a, b) => dateKeyOrDefault(a) - dateKeyOrDefault(b))
     }
 
-    const sortedMonths = [...monthBuckets.keys()].sort((a, b) => a - b)
-
-    deckEl.innerHTML = ''
-
-    for (const monthIndex of sortedMonths) {
-      const sectionWrapper = document.createElement('div')
-      sectionWrapper.innerHTML = renderMonthView({ year: currentYear, monthIndex })
-      const section = sectionWrapper.firstElementChild
-      const grid = section.querySelector('[data-month-grid]')
-
-      const label = new Date(currentYear, monthIndex, 1)
-        .toLocaleString(undefined, { month: 'long' })
-        .toUpperCase()
-
-      const acts = monthBuckets.get(monthIndex)
-
-      const nodes = await Promise.all(acts.map((act, index) => {
-        const cardCtx = {
-          isLocalDev,
-          index,
-          monthLabel: label,
-          onEdit: async (id, updates) => {
-            // Merge updates with current activity data
-            const updatedActivity = { ...act, ...updates, id, updated_at: new Date().toISOString() }
-            await dataStore.updateActivity(updatedActivity, isLocalDev)
-            await renderMonthWise()
-          },
-          onToggle: async () => {
-            await toggleUsage(act, isLocalDev)
-            celebrateIfNeeded(act)
-            await renderMonthWise()
-          },
-          getSuitMeta,
-          fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
-        }
-
-        return createDeckCard(act, cardCtx)
-      }))
-
-      nodes.forEach(n => grid.appendChild(n))
-      deckEl.appendChild(section)
+    if (Object.keys(dealtCardCounts).length === 0) {
+      for (const suit of suits) dealtCardCounts[suit] = 0
     }
+
+    const piles = suits.map((suit) => {
+      const cards = suitBuckets[suit]
+      const dealt = dealtCardCounts[suit] || 0
+      const total = cards.length
+
+      return {
+        suit,
+        suitMeta: getSuitMeta(suit),
+        total,
+        revealed: dealt,
+        remaining: total,
+        cards
+      }
+    })
+
+    deckEl.innerHTML = renderPileView({ piles })
+
+    for (const pile of piles) {
+      const container = deckEl.querySelector(`[data-pile-cards="${pile.suit}"]`)
+      if (!container) continue
+
+      const total = pile.cards.length
+      if (total === 0) continue
+
+      const dealt = dealtCardCounts[pile.suit] || 0
+      if (dealt <= 0) continue
+
+      const currentIdx = (dealt - 1) % total
+      const currentCard = pile.cards[currentIdx]
+      if (!currentCard) continue
+
+      const cardNode = await createDeckCard(currentCard, {
+        isLocalDev,
+        index: 0,
+        monthLabel: pile.suitMeta.label,
+        onEdit: async (id, updates) => {
+          const updatedActivity = { ...currentCard, ...updates, id, updated_at: new Date().toISOString() }
+          await dataStore.updateActivity(updatedActivity, isLocalDev)
+          await renderPiles()
+        },
+        onToggle: async () => {
+          await toggleUsage(currentCard, isLocalDev)
+          celebrateIfNeeded(currentCard)
+          await renderPiles()
+        },
+        getSuitMeta,
+        fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
+      })
+
+      container.appendChild(cardNode)
+    }
+
+
+    const dealBtn = deckEl.querySelector('#dealCardsBtn')
+    if (dealBtn) dealBtn.onclick = dealNextFour
+  }
+
+  async function dealNextFour() {
+    const suits = ['hearts', 'diamonds', 'clubs', 'spades']
+
+    // Keep ordering stable
+    await refreshActivities()
+
+    // Advance each suit by 1 (circular)
+    for (const suit of suits) {
+      const total = activities.filter(a => a.deck_year === currentYear && a.suit === suit).length
+      if (total <= 0) continue
+      dealtCardCounts[suit] = (dealtCardCounts[suit] || 0) + 1
+    }
+
+    await renderPiles()
   }
 
   setYearActive(currentYear)
-  await renderMonthWise()
+  await renderPiles()
 }
 
 export async function renderGiftView(app) {

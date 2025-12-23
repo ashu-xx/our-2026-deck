@@ -17,8 +17,12 @@ export function renderLandingView({ pastYear, upcomingYear, userEmail }) {
           <header class="text-center mb-10">
             <div class="text-7xl mb-3 animate-float">💝</div>
             <h1 class="font-festive text-6xl text-gold drop-shadow-2xl">Our Adventures Together</h1>
-            <p class="font-script text-2xl text-white/90 mt-3">Pick a suit, then deal the deck 🎴</p>
-            <p class="text-white/70 text-sm mt-2">${pastYear} memories are revealed • ${upcomingYear} plans start face-down</p>
+            <p class="font-script text-2xl text-white/90 mt-3">A deck of moments for us 🎴</p>
+            <div class="max-w-2xl mx-auto mt-4 p-4 bg-white/90 backdrop-blur-sm rounded-xl border-2 border-gold/50 shadow-lg">
+              <p class="text-gray-800 text-base font-semibold">✨ 52 Cards = 52 Weeks in a Year ✨</p>
+              <p class="text-gray-700 text-sm mt-2 font-script">Just like a year unfolds week by week, our deck holds 52 adventures—one for each week we share together. Press "Deal" to reveal 4 cards at once (one from each pile), and discover the jokers hidden along the way! 💕</p>
+            </div>
+            <p class="text-white/70 text-sm mt-4">${pastYear} memories are revealed • ${upcomingYear} plans start face-down</p>
           </header>
 
           <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -46,7 +50,7 @@ export function renderLandingView({ pastYear, upcomingYear, userEmail }) {
 
           <section class="text-center">
             <button id="dealDeckBtn" class="btn btn-primary px-10 py-4 rounded-2xl shadow-2xl font-bold text-lg transform hover:scale-[1.02]">
-              Deal the Deck 🎴
+              Reveal the Deck 🎴
             </button>
             <div class="mt-6 flex justify-center">
               <div class="relative w-40 h-56">
