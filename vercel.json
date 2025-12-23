@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    {
+      "source": "/all",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/all/:year",
+      "destination": "/index.html"
+    }
+  ]
+}
+
