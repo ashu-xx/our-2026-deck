@@ -16,6 +16,15 @@ export function renderCardView({
   const displayEmoji = isJoker ? '🌟' : emoji
   const displayLabel = isJoker ? 'Wild Card!' : suitLabel
 
+  // Only show the optional pill label if it's not duplicating the suit label.
+  const normalizedLabel = (label || '').trim()
+  const normalizedDisplayLabel = (displayLabel || '').trim()
+  const showPillLabel = Boolean(
+    normalizedLabel &&
+      normalizedDisplayLabel &&
+      normalizedLabel.toLowerCase() !== normalizedDisplayLabel.toLowerCase()
+  )
+
   const cacheBuster = act.updated_at || act.id || ''
 
   // Don't append query params to blob: URLs (they're already unique per object URL).
@@ -60,11 +69,11 @@ export function renderCardView({
       <div class="absolute inset-0 backface-hidden border-4 border-white rounded-3xl shadow-2xl overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
         <div class="absolute inset-2 rounded-2xl border-2 border-white/30"></div>
         <div class="absolute inset-6 rounded-xl border border-white/15"></div>
-        <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-white px-6">
           <div class="text-6xl drop-shadow">${displaySymbol}</div>
           <div class="mt-2 text-3xl">${displayEmoji}</div>
-          <div class="mt-4 px-4 py-2 bg-white/10 rounded-full backdrop-blur text-xs font-bold tracking-[0.3em] uppercase">${label || ''}</div>
-          <div class="mt-2 text-[11px] text-white/80 font-semibold">${displayLabel}</div>
+          ${showPillLabel ? `<div class="mt-4 px-4 py-2 bg-white/10 rounded-full backdrop-blur text-xs font-bold tracking-[0.3em] uppercase">${label}</div>` : ''}
+          <div class="mt-2 text-[9px] text-white/90 font-bold text-center max-w-[70%] leading-tight break-words uppercase tracking-wider">${displayLabel}</div>
           <div class="mt-6 text-[11px] text-white/70">Tap to reveal • Swipe to skip</div>
           ${editBtnBack}
         </div>
@@ -82,9 +91,7 @@ export function renderCardView({
         </div>
 
         <div class="p-2 sm:p-3 flex-1 flex flex-col ${suitClass} overflow-hidden">
-          <p class="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-semibold">Weekend Activity</p>
           <h3 class="font-bold text-sm sm:text-base leading-tight text-slate-900 mb-1">${act.title}</h3>
-          <p class="text-[10px] sm:text-xs text-slate-700 leading-snug line-clamp-2 mb-1">${act.description || ''}</p>
           ${ctaHtml}
         </div>
       </div>
