@@ -631,3 +631,70 @@ nav button:hover {
   animation: dealFromPile 0.6s ease-out;
 }
 
+/* Birthday celebration overlay */
+.birthday-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.birthday-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.55));
+  backdrop-filter: blur(3px);
+}
+
+.birthday-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  text-align: center;
+  color: white;
+  text-shadow: 0 10px 35px rgba(0, 0, 0, 0.55);
+}
+
+.birthday-emoji {
+  font-size: 88px;
+  animation: birthdayPop 520ms ease-out;
+}
+
+.birthday-title {
+  margin-top: 8px;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.birthday-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.birthday-balloons {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.birthday-float {
+  position: absolute;
+  bottom: -40px;
+  font-size: 26px;
+  animation-name: birthdayFloat;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes birthdayFloat {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateY(-110vh) rotate(18deg); opacity: 0; }
+}
+
+@keyframes birthdayPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

@@ -1,6 +1,7 @@
 import { showCardEditor } from './cardEditor'
 import { renderCardView } from './views/cardView'
 import { showCardLargeModal } from './views/cardLargeModal'
+import { showBirthdayCelebration } from './birthdayCelebration'
 
 /**
  * @typedef {Object} DeckCardContext
@@ -88,6 +89,7 @@ export async function createDeckCard(act, ctx) {
     if (e.target.closest('.edit-card-btn')) return
     if (e.target.closest('.view-large-btn')) return
     if (Math.hypot(currentX, currentY) > 8) return
+
     flipState = !flipState
     inner.classList.toggle('flipped', flipState)
     setTransform()
@@ -191,6 +193,9 @@ export async function createDeckCard(act, ctx) {
     if (!viewBtn) return
     e.stopPropagation()
     try {
+      console.log('[View Button] Calling showBirthdayCelebration')
+      // Treat opening the large view as a reveal moment as well.
+      showBirthdayCelebration(act)
       await showCardLargeModal({ act, isLocalDev, label })
     } catch (err) {
       console.error(err)
