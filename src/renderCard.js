@@ -43,9 +43,10 @@ export async function createDeckCard(act, ctx) {
   // In view-only mode, keep the card focused for viewing (no edit UI),
   // but still allow marking complete via swipe/double-click.
   // We still show a "Completed" badge when the card is done.
-  const ctaHtml = viewOnly
-    ? (act.is_used ? buildCtaHtml({ isDone: true }) : '')
-    : buildCtaHtml({ isDone: act.is_used })
+  let ctaHtml = buildCtaHtml({ isDone: act.is_used })
+  if (viewOnly && !act.is_used) {
+    ctaHtml = ''
+  }
 
   card.innerHTML = renderCardView({
     act,
