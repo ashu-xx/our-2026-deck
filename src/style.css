@@ -240,6 +240,17 @@
 .card-container {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   touch-action: manipulation;
+
+  /* Ensure any focus/active highlight respects rounded corners */
+  border-radius: 1.5rem; /* matches rounded-3xl */
+  overflow: hidden;
+  outline: none;
+}
+
+/* Use a rounded inset ring for keyboard focus instead of the browser's rectangular outline */
+.card-container:focus,
+.card-container:focus-visible {
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.55), 0 0 0 8px rgba(148, 163, 184, 0.18);
 }
 
 .card-container:hover {
@@ -248,12 +259,12 @@
   filter: brightness(1.05);
 }
 
-@media (hover: none) and (pointer: coarse) {
-  /* Disable hover effect on touch devices */
-  .card-container:hover {
-    transform: none;
-    filter: none;
-  }
+.card-container:hover:focus,
+.card-container:hover:focus-visible {
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 4px rgba(148, 163, 184, 0.55),
+    0 0 0 8px rgba(148, 163, 184, 0.18);
 }
 
 /* Gradient backgrounds for suits */
