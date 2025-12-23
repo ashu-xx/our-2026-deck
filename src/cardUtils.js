@@ -4,12 +4,11 @@ export const SUIT_META = {
   hearts: { symbol: '♥️', emoji: '🎭', label: 'Cultural & Social' },
   diamonds: { symbol: '♦️', emoji: '🗺️', label: 'Adventures & Exploration' },
   clubs: { symbol: '♣️', emoji: '🦙', label: 'Nature & Outdoors' },
-  spades: { symbol: '♠️', emoji: '🏠', label: 'Cozy & Creative' },
-  default: { symbol: '✨', emoji: '✨', label: 'Special' }
+  spades: { symbol: '♠️', emoji: '🏠', label: 'Cozy & Creative' }
 }
 
 export function getSuitMeta(suit) {
-  return SUIT_META[suit] || SUIT_META.default
+  return SUIT_META[suit]
 }
 
 export async function fetchImageUrl(act, isLocalDev) {

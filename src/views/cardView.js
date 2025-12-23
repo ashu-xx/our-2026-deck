@@ -7,13 +7,7 @@ export function renderCardView({
   label,
   showEdit = false
 }) {
-  const { symbol, emoji, label: suitLabel } = suitMeta
-
-  // Check if this is a joker card
-  const isJoker = act.title?.toLowerCase().includes('joker')
-  const displaySymbol = isJoker ? '🃏' : symbol
-  const displayEmoji = isJoker ? '🌟' : emoji
-  const displayLabel = isJoker ? 'Wild Card!' : suitLabel
+  const { symbol: displaySymbol, emoji: displayEmoji, label: displayLabel } = suitMeta
 
   // Only show the optional pill label if it's not duplicating the suit label.
   const normalizedLabel = (label || '').trim()

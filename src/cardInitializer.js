@@ -37,36 +37,6 @@ export function initializeYearCards(year) {
     })
   }
 
-  // Create 2 joker cards and place them randomly in any suit
-  const randomSuit = () => suits[Math.floor(Math.random() * suits.length)]
-  const randomWeek1 = Math.floor(Math.random() * 52) + 1
-  const randomWeek2 = Math.floor(Math.random() * 52) + 1
-
-  cards.push(
-    {
-      id: generateActivityId(),
-      title: 'Joker 1',
-      description: 'Wild card adventure!',
-      suit: randomSuit(),
-      deck_year: year,
-      planned_date: isoDateForWeek(year, randomWeek1),
-      image_path: null,
-      created_at: now,
-      updated_at: now
-    },
-    {
-      id: generateActivityId(),
-      title: 'Joker 2',
-      description: 'Another wild card adventure!',
-      suit: randomSuit(),
-      deck_year: year,
-      planned_date: isoDateForWeek(year, randomWeek2),
-      image_path: null,
-      created_at: now,
-      updated_at: now
-    }
-  )
-
   return cards
 }
 

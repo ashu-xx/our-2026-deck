@@ -33,11 +33,11 @@ export async function createDeckCard(act, ctx) {
   card.style.animationDelay = `${index * 0.05}s`
 
   const imgUrl = await fetchImageUrl(act)
-  const suitMeta = getSuitMeta(act.suit)
+  const suitMeta = getSuitMeta(act.suit) || { symbol: '✨', emoji: '✨', label: 'Other' }
 
   // Always show the revealed/front side now.
   const isFlipped = 'flipped'
-  const suitClass = `suit-${act.suit}`
+  const suitClass = suitMeta && getSuitMeta(act.suit) ? `suit-${act.suit}` : ''
 
   card.innerHTML = renderCardView({
     act,

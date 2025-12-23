@@ -273,10 +273,6 @@
   background: linear-gradient(135deg, #f0e6ff 0%, #dfc7ff 100%);
 }
 
-.suit-joker {
-  background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
-}
-
 /* Decorative background pattern */
 .bg-pattern {
   background-image:
@@ -306,26 +302,6 @@
   transition: none;
   cursor: grabbing;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-}
-
-/* Joker special styling */
-.joker-shimmer {
-  background: linear-gradient(
-    45deg,
-    #ffd700 0%,
-    #ffed4e 25%,
-    #ffd700 50%,
-    #ffed4e 75%,
-    #ffd700 100%
-  );
-  background-size: 200% 200%;
-  animation: shimmer 3s ease infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 0 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
 }
 
 /* Custom scrollbar */

@@ -30,7 +30,14 @@ npm run build
 - Cards are **always shown revealed** (no flip / no completed state).
 
 ### 52 cards = 52 weeks
-The deck represents 52 weeks in a year — one card per week — so you keep dealing to see what the year holds.
+- The deck represents **52 weeks** in a year — one card per week.
+- There are **no joker cards**.
+
+---
+
+## Initialization
+For a given `deck_year`, the app auto-creates the deck **only when that year has zero cards**.
+Initialization creates exactly **52 cards** (13 per suit × 4 suits).
 
 ---
 
@@ -66,7 +73,7 @@ Each card is an "activity":
 - `id` (string)
 - `title` (string)
 - `description` (string)
-- `suit` (`hearts | diamonds | clubs | spades`)
+- `suit` (`hearts | diamonds | clubs | spades`) 
 - `deck_year` (number)
 - `planned_date` (YYYY-MM-DD)
 - `image_path` (optional; URL in prod, IndexedDB key in local dev)

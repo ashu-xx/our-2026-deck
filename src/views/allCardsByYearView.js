@@ -20,7 +20,7 @@ function dateKeyOrDefault(act) {
 }
 
 // Keep order stable for section rendering.
-const SUIT_ORDER = ['hearts', 'diamonds', 'clubs', 'spades', 'joker']
+const SUIT_ORDER = ['hearts', 'diamonds', 'clubs', 'spades']
 
 function suitDisplay(suit) {
   const meta = getSuitMeta(suit)
@@ -56,19 +56,16 @@ async function renderSuitSection({ container, year, suit, cards, isLocalDev }) {
   section.dataset.suit = suit
 
   section.innerHTML = `
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
-      <div>
-        <h2 class="text-2xl font-extrabold text-white drop-shadow">
-          <span class="mr-2">${meta.symbol}</span>${meta.label}
-          <span class="ml-2 text-white/70 text-sm font-bold">(${cards.length})</span>
-        </h2>
-        <p class="text-white/60 text-xs">${meta.emoji ? `Theme: ${meta.emoji}` : ''}</p>
-      </div>
-      <div class="flex gap-2">
-        <button type="button" class="add-card-btn btn btn-success px-4 py-2 rounded-full" data-add-card-suit="${suit}">
-          + Add card
-        </button>
-      </div>
+    <div class="text-center mb-4">
+      <div class="text-5xl mb-2">${meta.symbol}</div>
+      <h2 class="font-festive text-2xl text-gold drop-shadow">${meta.label}</h2>
+      <p class="text-white/60 text-xs mt-1">${cards.length} cards</p>
+    </div>
+
+    <div class="flex justify-center mb-4">
+      <button type="button" class="add-card-btn btn btn-success px-4 py-2 rounded-full" data-add-card-suit="${suit}">
+        + Add card
+      </button>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-6" data-suit-grid="${suit}"></div>
@@ -195,8 +192,8 @@ export async function renderAllCardsByYearView({ app, year, isLocalDev }) {
 
   const bySuit = new Map(SUIT_ORDER.map(s => [s, []]))
   for (const act of yearCards) {
-    const suit = ['hearts', 'diamonds', 'clubs', 'spades'].includes(act.suit) ? act.suit : 'joker'
-    bySuit.get(suit).push(act)
+    if (!SUIT_ORDER.includes(act.suit)) continue
+    bySuit.get(act.suit).push(act)
   }
 
   // Render suit sections in stable order.
