@@ -1,5 +1,6 @@
 import { showCardEditor } from './cardEditor'
 import { renderCardView } from './views/cardView'
+import { showCardLargeModal } from './views/cardLargeModal'
 
 /**
  * @typedef {Object} DeckCardContext
@@ -85,6 +86,7 @@ export async function createDeckCard(act, ctx) {
 
   inner.addEventListener('click', (e) => {
     if (e.target.closest('.edit-card-btn')) return
+    if (e.target.closest('.view-large-btn')) return
     if (Math.hypot(currentX, currentY) > 8) return
     flipState = !flipState
     inner.classList.toggle('flipped', flipState)
@@ -95,6 +97,7 @@ export async function createDeckCard(act, ctx) {
   // (Edit remains disabled by showEdit=false.)
   inner.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.edit-card-btn')) return
+    if (e.target.closest('.view-large-btn')) return
     dragging = true
     startX = e.clientX - currentX
     startY = e.clientY - currentY
@@ -179,6 +182,18 @@ export async function createDeckCard(act, ctx) {
       if (onToggle) await onToggle()
     } catch (err) {
       alert(err.message || 'Failed to update card')
+    }
+  })
+
+  // Open modal for large view
+  card.addEventListener('click', async (e) => {
+    const viewBtn = e.target.closest('.view-large-btn')
+    if (!viewBtn) return
+    e.stopPropagation()
+    try {
+      await showCardLargeModal({ act, isLocalDev, label })
+    } catch (err) {
+      console.error(err)
     }
   })
 

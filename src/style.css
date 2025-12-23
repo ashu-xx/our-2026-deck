@@ -51,6 +51,113 @@
     @apply w-full border-2 border-gray-300 rounded-xl text-black outline-none transition-all placeholder-gray-400;
     @apply focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400;
   }
+
+  /* Large card modal */
+  .card-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+
+  .card-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+  }
+
+  .card-modal-dialog {
+    position: relative;
+    max-width: 980px;
+    margin: 4vh auto;
+    padding: 0 16px;
+  }
+
+  .card-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 22px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-weight: 800;
+    z-index: 2;
+  }
+
+  .card-modal-card {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .card-modal-image {
+    position: relative;
+    height: min(58vh, 520px);
+    background: #0b1220;
+  }
+
+  .card-modal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-modal-suit {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 999px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+  }
+
+  .card-modal-body {
+    padding: 16px 18px 18px;
+  }
+
+  .card-modal-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: rgba(15, 23, 42, 0.65);
+  }
+
+  .card-modal-title {
+    margin-top: 6px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .card-modal-desc {
+    margin-top: 8px;
+    color: rgba(15, 23, 42, 0.85);
+    line-height: 1.35;
+    font-size: 14px;
+    white-space: pre-wrap;
+  }
+
+  .card-modal-completed {
+    margin-top: 12px;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #10b981);
+    color: white;
+    font-weight: 900;
+    font-size: 12px;
+  }
 }
 
 @theme {
@@ -63,6 +170,13 @@
   --color-soft-pink: #ffe5e5;
   --color-lavender: #d4a5f9;
   --color-mint: #a7f3d0;
+}
+
+:root {
+  --tx: 0px;
+  --ty: 0px;
+  --rot: 0deg;
+  --flip: 0deg;
 }
 
 .perspective {
@@ -173,6 +287,12 @@
 
 /* Card flip animation enhancement */
 .card-inner {
+  /* Defaults for the CSS analyzer + runtime safety */
+  --tx: 0px;
+  --ty: 0px;
+  --rot: 0deg;
+  --flip: 0deg;
+
   transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.35s ease;
   transform: translate3d(var(--tx, 0px), var(--ty, 0px), 0) rotate(var(--rot, 0deg)) rotateY(var(--flip, 0deg));
   transform-style: preserve-3d;

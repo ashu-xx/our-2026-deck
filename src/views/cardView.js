@@ -46,12 +46,18 @@ export function renderCardView({
     `
     : ''
 
+  const viewLargeBtnFront = `
+      <button class="view-large-btn absolute bottom-2 left-2 bg-black/70 hover:bg-black/80 text-white px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-md">
+        🔍 View
+      </button>
+    `
+
   return `
     <div class="card-inner w-full h-full relative ${isFlipped}"
       style="--flip: ${isFlipped ? '180deg' : '0deg'}; --tx: 0px; --ty: 0px; --rot: 0deg;"
     >
       <!-- Back (playing card face-down) -->
-      <div class="absolute inset-0 backface-hidden border-4 border-white rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div class="absolute inset-0 backface-hidden border-4 border-white rounded-3xl shadow-2xl overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
         <div class="absolute inset-2 rounded-2xl border-2 border-white/30"></div>
         <div class="absolute inset-6 rounded-xl border border-white/15"></div>
         <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
@@ -66,11 +72,12 @@ export function renderCardView({
 
       <!-- Front (revealed activity) -->
       <div class="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-2xl bg-white border border-slate-200 flex flex-col">
-        <div class="relative h-56 sm:h-64 overflow-hidden flex-shrink-0">
+        <div class="relative h-56 sm:h-64 overflow-hidden shrink-0">
           <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-cover">
           <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
             ${displaySymbol}
           </div>
+          ${viewLargeBtnFront}
           ${editBtnFront}
         </div>
 
