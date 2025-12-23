@@ -10,7 +10,7 @@ export function renderPileView({ piles }) {
         <button id="dealCardsBtn" class="btn-primary px-12 py-5 rounded-2xl shadow-2xl font-bold text-xl transform hover:scale-105 transition-all">
           🎴 Deal
         </button>
-        <p class="text-white/70 text-sm mt-3">Reveals the next card from each pile (loops forever)</p>
+        <p class="text-white/70 text-sm mt-3">Reveals the next card from each pile</p>
       </div>
 
       <!-- 4 Piles side by side -->
