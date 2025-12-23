@@ -20,7 +20,7 @@ export function renderLandingView({ pastYear, upcomingYear, userEmail }) {
             <p class="font-script text-2xl text-white/90 mt-3">A deck of moments for us 🎴</p>
             <div class="max-w-2xl mx-auto mt-4 p-4 bg-white/90 backdrop-blur-sm rounded-xl border-2 border-gold/50 shadow-lg">
               <p class="text-gray-800 text-base font-semibold">✨ 52 Cards = 52 Weeks in a Year ✨</p>
-              <p class="text-gray-700 text-sm mt-2 font-script">Just like a year unfolds week by week, our deck holds 52 adventures—one for each week we share together. Press "Deal" to reveal 4 cards at once (one from each pile), and discover the jokers hidden along the way! 💕</p>
+              <p class="text-gray-700 text-sm mt-2 font-script">Just like a year unfolds week by week, our deck holds 52 adventures—one for each week we share together. Press "Deal" to reveal 4 cards at once (one from each pile). 💕</p>
             </div>
             <p class="text-white/70 text-sm mt-4">${pastYear} memories are revealed • ${upcomingYear} plans start face-down</p>
           </header>

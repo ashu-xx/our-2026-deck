@@ -51,7 +51,6 @@ export function renderCardEditorView({ card, isEmpty }) {
             <option value="diamonds" ${card.suit === 'diamonds' ? 'selected' : ''}>♦️ Diamonds - Adventures & Exploration</option>
             <option value="clubs" ${card.suit === 'clubs' ? 'selected' : ''}>♣️ Clubs - Nature & Outdoors</option>
             <option value="spades" ${card.suit === 'spades' ? 'selected' : ''}>♠️ Spades - Cozy & Creative</option>
-            <option value="joker" ${card.suit === 'joker' ? 'selected' : ''}>🃏 Joker - Wild Card</option>
           </select>
         </div>
 
