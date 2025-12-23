@@ -76,6 +76,13 @@ Set in Vercel Project → Settings → Environment Variables:
 
 > `APP_LOGIN_EMAIL` / `APP_LOGIN_PASSWORD` are server-only (do **not** prefix with `VITE_`).
 
+#### Image uploads (direct to Blob)
+In production, images are uploaded **directly from the browser to Vercel Blob** using a short-lived upload token minted by the app:
+- Client requests a token from `POST /api/blob-upload-token` (protected by Basic Auth)
+- Client uploads the file to Blob using that token
+
+The legacy server-proxy upload route (`POST /api/upload`) still exists, but the app now prefers the direct upload path.
+
 ---
 
 ## Data model (high level)

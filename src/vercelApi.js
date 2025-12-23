@@ -20,7 +20,7 @@ function authHeader() {
 // Client for Vercel-hosted API routes (works on Vercel and locally).
 // Contract:
 // - Activities are stored server-side.
-// - Images are uploaded server-side and returned as a public URL.
+// - Images are uploaded directly from the browser to Vercel Blob using a server-issued upload token.
 
 async function request(path, { method = 'GET', body, headers } = {}) {
   const auth = authHeader()
@@ -59,8 +59,19 @@ export const vercelApi = {
   },
 
   async uploadImage(file) {
-    const fd = new FormData()
-    fd.append('file', file)
-    return request('/api/upload', { method: 'POST', body: fd })
+    // Request a short-lived Blob upload token from our API, then upload directly from the browser.
+    const tokenRes = await request('/api/blob-upload-token', {
+      method: 'POST',
+      body: {
+        filename: file?.name || 'upload',
+        contentType: file?.type || 'application/octet-stream'
+      }
+    })
+
+    const { upload } = await import('@vercel/blob/client')
+    return upload(tokenRes.key, file, {
+      access: 'public',
+      token: tokenRes.token
+    })
   }
 }

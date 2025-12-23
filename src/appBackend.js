@@ -220,10 +220,36 @@ export const appBackend = {
       return { image_path: data.path, url }
     }
 
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await request('/api/upload', { method: 'POST', body: fd })
-    return { image_path: res.url, url: res.url }
+    // Prod: prefer direct-to-Blob upload.
+    try {
+      // 1) Ask our API for a short-lived upload token.
+      const tokenRes = await request('/api/blob-upload-token', {
+        method: 'POST',
+        body: {
+          filename: file?.name || 'upload',
+          contentType: file?.type || 'application/octet-stream'
+        }
+      })
+
+      // 2) Upload from the browser directly to Vercel Blob.
+      const { upload } = await import('@vercel/blob/client')
+      const blob = await upload(tokenRes.key, file, {
+        access: 'public',
+        token: tokenRes.token
+      })
+
+      return { image_path: blob.url, url: blob.url }
+    } catch (err) {
+      // Fallback: legacy server-proxy upload.
+      try {
+        const fd = new FormData()
+        fd.append('file', file)
+        const res = await request('/api/upload', { method: 'POST', body: fd })
+        return { image_path: res.url, url: res.url }
+      } catch (error_) {
+        throw error_ || err
+      }
+    }
   },
 
   async getImageUrl(imagePath, explicitIsLocalDev) {
