@@ -62,6 +62,7 @@ export function renderCardEditorView({ card, isEmpty }) {
             type="file"
             id="editImageFile"
             accept="image/*"
+            capture="environment"
             class="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-gray-700 hover:file:bg-yellow-500 file:cursor-pointer"
           >
           <div id="editImageStatus" class="mt-2 text-xs text-gray-700"></div>

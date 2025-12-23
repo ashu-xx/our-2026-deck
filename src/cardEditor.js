@@ -1,5 +1,6 @@
 import { renderCardEditorView } from './views/cardEditorView'
 import { dataStore } from './dataStore'
+import { compressImageForUpload } from './imageCompress'
 
 // Card Editor Modal Component
 export function showCardEditor(card, isLocalDev, onSave) {
@@ -32,11 +33,16 @@ export function showCardEditor(card, isLocalDev, onSave) {
         submitBtn.disabled = true
         submitBtn.innerHTML = 'Uploading…'
       }
-      fileStatus.textContent = 'Uploading…'
+
+      fileStatus.textContent = 'Preparing image…'
       fileStatus.classList.remove('text-green-600', 'text-red-600')
       fileStatus.classList.add('text-gray-700')
 
-      const { image_path } = await dataStore.uploadImage(file, isLocalDev)
+      const uploadFile = await compressImageForUpload(file)
+
+      fileStatus.textContent = 'Uploading…'
+
+      const { image_path } = await dataStore.uploadImage(uploadFile, isLocalDev)
       pendingImagePath = image_path
 
       fileStatus.textContent = 'Uploaded'
@@ -72,7 +78,14 @@ export function showCardEditor(card, isLocalDev, onSave) {
 
     try {
       if (file && !pendingImagePath) {
-        const { image_path } = await dataStore.uploadImage(file, isLocalDev)
+        fileStatus.textContent = 'Preparing image…'
+        fileStatus.classList.remove('text-green-600')
+        fileStatus.classList.add('text-gray-700')
+
+        const uploadFile = await compressImageForUpload(file)
+        fileStatus.textContent = 'Uploading…'
+
+        const { image_path } = await dataStore.uploadImage(uploadFile, isLocalDev)
         pendingImagePath = image_path
       }
 
