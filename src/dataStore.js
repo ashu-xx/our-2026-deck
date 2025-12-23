@@ -22,6 +22,10 @@ export const dataStore = {
     return appBackend.insertActivities(activities, isLocalDevMode(explicitIsLocalDev))
   },
 
+  async deleteActivity(id, explicitIsLocalDev) {
+    return appBackend.deleteActivity(id, isLocalDevMode(explicitIsLocalDev))
+  },
+
   async uploadImage(file, explicitIsLocalDev) {
     return appBackend.uploadImage(file, isLocalDevMode(explicitIsLocalDev))
   },

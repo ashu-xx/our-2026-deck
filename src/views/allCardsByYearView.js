@@ -19,6 +19,118 @@ function dateKeyOrDefault(act) {
   return new Date(act.deck_year, 11, 1).getTime()
 }
 
+// Keep order stable for section rendering.
+const SUIT_ORDER = ['hearts', 'diamonds', 'clubs', 'spades', 'joker']
+
+function suitDisplay(suit) {
+  const meta = getSuitMeta(suit)
+  const fallback = String(suit || '').toUpperCase()
+  return {
+    suit,
+    label: meta?.label || fallback,
+    emoji: meta?.emoji || '',
+    symbol: meta?.symbol || ''
+  }
+}
+
+function emptyCardTemplate({ year, suit }) {
+  const now = new Date().toISOString()
+  return {
+    id: `custom-${year}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    deck_year: year,
+    planned_date: null,
+    title: '',
+    description: '',
+    suit,
+    image_path: null,
+    is_used: false,
+    created_at: now,
+    updated_at: now
+  }
+}
+
+async function renderSuitSection({ container, year, suit, cards, isLocalDev }) {
+  const meta = suitDisplay(suit)
+
+  const section = document.createElement('section')
+  section.className = 'mt-10'
+  section.dataset.suit = suit
+
+  section.innerHTML = `
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+      <div>
+        <h2 class="text-2xl font-extrabold text-white drop-shadow">
+          <span class="mr-2">${meta.symbol}</span>${meta.label}
+          <span class="ml-2 text-white/70 text-sm font-bold">(${cards.length})</span>
+        </h2>
+        <p class="text-white/60 text-xs">${meta.emoji ? `Theme: ${meta.emoji}` : ''}</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" class="add-card-btn btn btn-success px-4 py-2 rounded-full" data-add-card-suit="${suit}">
+          + Add card
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-6" data-suit-grid="${suit}"></div>
+  `
+
+  container.appendChild(section)
+
+  const grid = section.querySelector(`[data-suit-grid="${suit}"]`)
+  if (!grid) return
+
+  if (cards.length === 0) {
+    const empty = document.createElement('div')
+    empty.className = 'col-span-full max-w-2xl mx-auto surface-card p-6 text-center border-2 border-white/20'
+    empty.innerHTML = `<h3 class="font-bold text-lg text-slate-900">No ${meta.label} cards for ${year}</h3>`
+    grid.appendChild(empty)
+    return
+  }
+
+  const nodes = await Promise.all(cards.map(async (act, index) => {
+    const node = await createDeckCard(act, {
+      isLocalDev,
+      index,
+      label: String(year),
+      showEdit: true,
+      viewOnly: false,
+      onEdit: async (id, updates) => {
+        const updatedActivity = { ...act, ...updates, id, updated_at: new Date().toISOString() }
+        await dataStore.updateActivity(updatedActivity, isLocalDev)
+        await renderAllCardsByYearView({ app: container.closest('#app') || container, year, isLocalDev })
+      },
+      onToggle: async () => {
+        await toggleUsage(act, isLocalDev)
+        celebrateIfNeeded(act)
+        await renderAllCardsByYearView({ app: container.closest('#app') || container, year, isLocalDev })
+      },
+      getSuitMeta,
+      fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
+    })
+
+    // Force "revealed" (front) view visually, but don't touch is_used/completed state.
+    const inner = node.querySelector('.card-inner')
+    if (inner) {
+      inner.classList.add('flipped')
+      inner.style.setProperty('--flip', '180deg')
+    }
+
+    // Add remove button to the card container.
+    const removeBtn = document.createElement('button')
+    removeBtn.type = 'button'
+    removeBtn.className = 'remove-card-btn absolute top-2 left-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 text-[11px] font-bold rounded-full transition-all shadow-md'
+    removeBtn.textContent = '🗑 Remove'
+    removeBtn.dataset.removeCardId = String(act.id)
+    if (act.title) removeBtn.dataset.removeCardTitle = String(act.title)
+    node.appendChild(removeBtn)
+
+    return node
+  }))
+
+  nodes.forEach(n => grid.appendChild(n))
+}
+
 /**
  * Hidden view: renders ALL cards for a given year.
  * Meant to be accessed only via direct URL.
@@ -34,58 +146,78 @@ export async function renderAllCardsByYearView({ app, year, isLocalDev }) {
         <p class="text-white/60 text-xs mt-2">Tip: go back to <code class="bg-white/10 px-2 py-1 rounded">/</code> for the normal experience</p>
       </header>
       <main class="px-6 mt-8">
-        <div id="allCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-6"></div>
+        <div id="allCardsSections" class="max-w-7xl mx-auto"></div>
       </main>
     </div>
   `
 
-  const grid = app.querySelector('#allCardsGrid')
-  if (!grid) return
+  const sections = app.querySelector('#allCardsSections')
+  if (!sections) return
+
+  // One-time delegated handler bound to this freshly-rendered container.
+  sections.addEventListener('click', async (e) => {
+    const addBtn = e.target?.closest?.('[data-add-card-suit]')
+    if (addBtn) {
+      e.preventDefault()
+      // @ts-ignore - dataset typing varies by tooling
+      const suit = addBtn.dataset.addCardSuit
+      if (!suit) return
+      const activity = emptyCardTemplate({ year, suit })
+      await dataStore.insertActivities([activity], isLocalDev)
+      await renderAllCardsByYearView({ app, year, isLocalDev })
+      return
+    }
+
+    const removeBtn = e.target?.closest?.('[data-remove-card-id]')
+    if (removeBtn) {
+      e.preventDefault()
+      // @ts-ignore
+      const id = removeBtn.dataset.removeCardId
+      if (!id) return
+
+      // Best-effort label.
+      // @ts-ignore
+      const titleAttr = removeBtn.dataset.removeCardTitle
+      const title = titleAttr ? `"${titleAttr}"` : 'this card'
+      if (!confirm(`Remove ${title}? This cannot be undone.`)) return
+
+      await dataStore.deleteActivity(id, isLocalDev)
+      await renderAllCardsByYearView({ app, year, isLocalDev })
+    }
+  }, { passive: false })
 
   const all = await dataStore.listActivities(isLocalDev)
-  const cards = all
+  const yearCards = all
     .filter(a => a.deck_year === year)
     .sort((a, b) => dateKeyOrDefault(a) - dateKeyOrDefault(b))
 
-  if (cards.length === 0) {
-    grid.innerHTML = `
-      <div class="col-span-full max-w-2xl mx-auto surface-card p-6 text-center border-2 border-white/20">
+  if (yearCards.length === 0) {
+    sections.innerHTML = `
+      <div class="max-w-2xl mx-auto surface-card p-6 text-center border-2 border-white/20">
         <h3 class="font-bold text-xl text-slate-900">No cards found for ${year}</h3>
+        <p class="text-slate-600 text-sm mt-2">Use the buttons below to add your first card.</p>
+        <div class="mt-4 flex flex-wrap gap-2 justify-center">
+          ${SUIT_ORDER.map(s => `<button type="button" class="add-card-btn btn btn-success px-4 py-2 rounded-full" data-add-card-suit="${s}">+ Add ${suitDisplay(s).label}</button>`).join('')}
+        </div>
       </div>
     `
+
     return
   }
 
-  const nodes = await Promise.all(cards.map(async (act, index) => {
-    const node = await createDeckCard(act, {
-      isLocalDev,
-      index,
-      label: String(year),
-      showEdit: true,
-      viewOnly: false,
-      onEdit: async (id, updates) => {
-        const updatedActivity = { ...act, ...updates, id, updated_at: new Date().toISOString() }
-        await dataStore.updateActivity(updatedActivity, isLocalDev)
-        await renderAllCardsByYearView({ app, year, isLocalDev })
-      },
-      onToggle: async () => {
-        await toggleUsage(act, isLocalDev)
-        celebrateIfNeeded(act)
-        await renderAllCardsByYearView({ app, year, isLocalDev })
-      },
-      getSuitMeta,
-      fetchImageUrl: (activity) => fetchImageUrl(activity, isLocalDev)
-    })
+  const bySuit = new Map(SUIT_ORDER.map(s => [s, []]))
+  for (const act of yearCards) {
+    const suit = ['hearts', 'diamonds', 'clubs', 'spades'].includes(act.suit) ? act.suit : 'joker'
+    bySuit.get(suit).push(act)
+  }
 
-    // Force "revealed" (front) view visually, but don't touch is_used/completed state.
-    const inner = node.querySelector('.card-inner')
-    if (inner) {
-      inner.classList.add('flipped')
-      inner.style.setProperty('--flip', '180deg')
-    }
+  // Render suit sections in stable order.
+  let globalIndex = 0
+  for (const suit of SUIT_ORDER) {
+    const cards = bySuit.get(suit) || []
+    await renderSuitSection({ container: sections, year, suit, cards, isLocalDev })
+    globalIndex += cards.length
+  }
 
-    return node
-  }))
-
-  nodes.forEach(n => grid.appendChild(n))
+  // (Event delegation handler is attached above.)
 }

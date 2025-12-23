@@ -194,6 +194,22 @@ export const appBackend = {
     await request('/api/activities', { method: 'PUT', body: { activities: [activity] } })
   },
 
+  async deleteActivity(id, explicitIsLocalDev) {
+    const isLocalDev = isLocalDevMode(explicitIsLocalDev)
+
+    if (id == null || String(id).trim() === '') {
+      throw new Error('Cannot delete activity: missing id')
+    }
+
+    if (isLocalDev) {
+      const { error } = await localStorageDB.deleteActivity(String(id))
+      if (error) throw new Error(error.message)
+      return
+    }
+
+    await request(`/api/activities/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
+  },
+
   // ---- Images ----
   async uploadImage(file, explicitIsLocalDev) {
     const isLocalDev = isLocalDevMode(explicitIsLocalDev)
