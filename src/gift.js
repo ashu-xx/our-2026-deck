@@ -68,7 +68,7 @@ async function runDealFlow({ app, isLocalDev, pastYear, upcomingYear }) {
     }
   })
 
-  let currentYear = upcomingYear
+  let currentYear = pastYear
 
   /**
    * How many cards have been *dealt* from each suit (monotonic counter).
