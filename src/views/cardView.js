@@ -4,7 +4,6 @@ export function renderCardView({
   suitMeta,
   isFlipped,
   suitClass,
-  ctaHtml,
   label,
   showEdit = false
 }) {
@@ -81,8 +80,8 @@ export function renderCardView({
 
       <!-- Front (revealed activity) -->
       <div class="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-2xl bg-white border border-slate-200 flex flex-col">
-        <div class="relative h-56 sm:h-64 overflow-hidden shrink-0">
-          <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-contain bg-black/5">
+        <div class="relative overflow-hidden shrink-0 flex-1" style="min-height: 0;">
+          <img src="${imgSrc}" alt="${act.title}" class="h-full w-full object-cover">
           <div class="absolute top-2 right-2 bg-white/90 rounded-full w-10 h-10 flex items-center justify-center text-2xl shadow-lg">
             ${displaySymbol}
           </div>
@@ -90,9 +89,8 @@ export function renderCardView({
           ${editBtnFront}
         </div>
 
-        <div class="p-2 sm:p-3 flex-1 flex flex-col ${suitClass} overflow-hidden">
-          <h3 class="font-bold text-sm sm:text-base leading-tight text-slate-900 mb-1">${act.title}</h3>
-          ${ctaHtml}
+        <div class="p-3 ${suitClass}">
+          <h3 class="font-bold text-base leading-tight text-slate-900">${act.title}</h3>
         </div>
       </div>
     </div>

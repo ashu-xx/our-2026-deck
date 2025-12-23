@@ -39,16 +39,12 @@ export async function createDeckCard(act, ctx) {
   const isFlipped = 'flipped'
   const suitClass = `suit-${act.suit}`
 
-  // Completion concept removed.
-  const ctaHtml = ''
-
   card.innerHTML = renderCardView({
     act,
     imgUrl,
     suitMeta,
     isFlipped,
     suitClass,
-    ctaHtml,
     label,
     showEdit
   })
